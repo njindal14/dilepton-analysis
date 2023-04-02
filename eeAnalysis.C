@@ -31,14 +31,45 @@ void eeAnalysis() {
    auto * mdTof = new TH1F("#Delta Tof hist", "#Delta Tof", 500, -15, 15);
    auto * mdTofexp = new TH1F("#Delta TofExp hist", "#Delta TofExp", 500, -15, 15);
    auto * mddTof = new TH1F("#Delta #Delta Tof hist", "#Delta #Delta Tof", 500, -10, 10);
-   //auto * mZDCEast = new TH1F("mZDCEast", "ZDCEast", 500, 0, 500);
-   //auto * mZDCWest = new TH1F("mSDCWest", "ZDCWest", 500, 0, 500);
+   auto * mZDCEast = new TH1F("mZDCEast", "ZDCEast", 500, 0, 500);
+   auto * mZDCWest = new TH1F("mSDCWest", "ZDCWest", 500, 0, 500);
 
    //auto * mChargeSum = new TH1F("ChargeSum", "Charge Sum", 500, -3, 3);
    auto * mPt = new TH1F("mPt", "Parent Transverse Momentum", 500, 0, 3);
-   //auto * mPhi = new TH1F("mPhi", "Parent Polar Angle (rad)", 500, -3.15, 3.15);
-   //auto * mEta = new TH1F("mEta", "Parent Pseudorapidity", 500, -6, 6);
-   auto * mMass = new TH1F("mMass", "Parent Mass (GeV)", 500, 0, 2);
+   auto * mPhi = new TH1F("mPhi", "Parent Polar Angle (rad)", 500, -3.15, 3.15);
+   auto * mEta = new TH1F("mEta", "Parent Pseudorapidity", 500, -6, 6);
+   auto * mMass = new TH1F("mMass", "Parent Mass (GeV)", 500, 0, 4);
+   
+   
+   auto * mMasschi = new TH1F("mMasschi", "Parent Mass (GeV)", 500, 0, 4);
+   auto * mMasschiTof = new TH1F("mMasschiTof", "Parent Mass (GeV)", 500, 0, 4);
+
+   
+   //new plots
+
+   //for plot 1. indicated below
+   auto * masslikecharges = new TH1F("Mass_hist", "Charge Sum-Separated Parent Mass (GeV) (plot 1)", 500, 0, 4 );
+   auto * massdiffcharges = new TH1F("Mass_hist", "Charge Sum-Separated Parent Mass (GeV)", 500, 0, 4);
+
+   //for plot 2.1 indicated below
+   auto * mMassPt = new TH1F("mMass Pt Cut", "Parent Mass with P_{T} cutoff (GeV) (plot 2.1)", 500, 0, 4);
+   auto * mMasschiPt = new TH1F("mMasschi Pt Cut", "Parent Mass (GeV)", 500, 0, 4);
+   auto * mMasschiTofPt = new TH1F("mMasschiTof Pt Cut", "Parent Mass (GeV)", 500, 0, 4);
+
+   //for plot 2.2 indicated below
+   auto * PtcutoffMasslikesign = new TH1F("mass_pt_cutoff", "Parent Mass for P_{T} < 100 MeV (plot 2.2)", 500, 0, 4);
+   auto * PtcutoffMassdiffsign = new TH1F("mass_pt_cutoff", "Parent Mass for P_{T} < 100 MeV", 500, 0, 4);
+   //auto * massdifference = new TH1F("Mass Difference", "Mass (GeV)", 500, 0, 4);
+
+   //for plot 3 indicated below
+   auto * Ptmcutlikesign = new TH1F("Pt_mass_cutoff", "P_{T} for Parent Mass > 0.45 GeV (plot 3)", 500, 0, 1);
+   auto * Ptmcutdiffsign = new TH1F("Pt_mass_cutoff", "P_{T} for Parent Mass > 0.45 GeV", 500, 0, 1);
+
+
+
+   //1. make a plot of unlike-sign pairs and like-sign pairs, also show the difference between the two.
+   //2. Make a plot of this plot (shown above) and #1 for a pT < 100 MeV cut, just to show how it changes the phase space distribution.
+   //3. Make a plot of the pT distribution for M > 0.45 GeV showing unlike-sign and like-sign (and difference)  
    
     // Open the file containing the tree.
     TFile *myFile = TFile::Open("/Users/Nick/Desktop/Spring2023/pair_dst_Run12UU.root");
@@ -79,19 +110,67 @@ void eeAnalysis() {
         lv = lv1 + lv2;
         lvn = lv1 - lv2;
 
+        //need to calculate different efficiencies and use to find differential cross section
+        //how to calculate differential cross section?
+
         
 
         mdTof->Fill( dTofVal );
         mdTofexp->Fill( dTofexpVal );
         mddTof->Fill( ddTofVal );
         mVertexZ->Fill( mVertexZVal);
+        mMass->Fill( lv.M() );
+
+        int chargesumval = pair->mChargeSum;
+
+
+        //make plots using like sign and unlike sign pairs for mass, for plot 1. and 2.2
+        if(chargesumval == 0){
+            massdiffcharges->Fill(lv.M());
+            if(lv.Pt() < 0.1){
+                PtcutoffMassdiffsign->Fill(lv.M());
+            }
+        }
+        else{
+            masslikecharges->Fill(lv.M());
+            if(lv.Pt() < 0.1){
+                PtcutoffMasslikesign->Fill(lv.M());
+            }
+        }
+
+        //for plot 3
+        if( lv.M() > 0.45 ){
+            if(chargesumval == 0){
+                Ptmcutdiffsign->Fill(lv.Pt());
+            }
+            else{
+                Ptmcutlikesign->Fill(lv.Pt());
+            }
+        }
+
+        //make plots for pt < 100 MeV, for plot 2.1
+        if(lv.Pt() < .1){
+            mMassPt -> Fill(lv.M());
+            if(chiee < 5){
+                mMasschiPt->Fill( lv.M() );
+                if(ddTofVal < 0.5 && ddTofVal > -0.5){
+                    mMasschiTofPt->Fill(lv.M());
+                }
+            }
+        }
+
+        if(chiee < 5){
+            mMasschi->Fill( lv.M() );
+            if(ddTofVal < 0.5 && ddTofVal > -0.5){
+                mMasschiTof->Fill(lv.M());
+            }
+        }
 
         //Let's apply some event variable and track cuts
         if( mVertexZVal < 100 && mVertexZVal > -100 && mGRefMultVal <= 4) {
             //now for some track cuts
             if( ddTofVal < 0.4 && ddTofVal > -0.4 && chiee < 10 && 3*chiee < chipipi) {
                 mPt->Fill( lv.Pt() );
-                mMass->Fill( lv.M() );
             
             }
         }
@@ -114,37 +193,56 @@ void eeAnalysis() {
     mPt->GetXaxis()->SetTitle("Pair Transverse Momentum (GeV/c)");
     mPt->GetYaxis()->SetTitle("Counts");
     mPt->Draw();
-    gPad->Print( "plot_mPt.pdf" );
+    gPad->Print( "plot_mPt.png" );
 
+    /*
     makeCanvas();
     mVertexZ->SetLineColor(kBlack);
     mVertexZ->GetXaxis()->SetTitle("zVertex (cm)");
     mVertexZ->GetYaxis()->SetTitle("Counts");
     mVertexZ->Draw();
-    gPad->Print( "plot_mVertexZ.pdf" );
+    gPad->Print( "plot_mVertexZ.png" );
+    */
 
     makeCanvas();
+    //auto * legend = new TLegend(0.2, 0.2, .8, .8);
     mMass->SetLineColor(kBlack);
-    mMass->GetXaxis()->SetTitle("Parent Mass (GeV/c)");
+    mMass->GetXaxis()->SetTitle("M_{ee} (GeV/c^{2})");
     mMass->GetYaxis()->SetTitle("Counts");
     mMass->Draw();
-    gPad->Print( "plot_mMass.pdf" );
+    gPad->SetLogy();
 
+    mMasschi->SetLineColor(kRed);
+    mMasschi->Draw("same");
+
+    mMasschiTof->SetLineColor(kBlue);
+    mMasschiTof->Draw("same");
+
+    auto * leg = new TLegend(0.75,0.5,.95,0.7);
+    leg->SetHeader("Legend");
+    leg->AddEntry(mMass,"None","l");
+    leg->AddEntry(mMasschi,"dE/dx","l");
+    leg->AddEntry(mMasschiTof, "dE/dx + TOF", "l");
+    leg->Draw("same");
+    gPad->Print( "plot_mMass.png" );
+
+    /*
     makeCanvas();
     mdTof->SetLineColor(kBlack);
     gPad->SetLogy();
     mdTof->GetXaxis()->SetTitle("#Delta TOF Distrubition (ns)");
     mdTof->GetYaxis()->SetTitle("Counts");
     mdTof->Draw();
-    gPad->Print( "plot_dTof.pdf");
+    gPad->Print( "plot_dTof.png");
 
+    
     makeCanvas();
     mdTofexp->SetLineColor(kRed);
     gPad->SetLogy();
     mdTofexp->GetXaxis()->SetTitle("#Delta TOF Distrubition Expected (ns)");
     mdTofexp->GetYaxis()->SetTitle("Counts");
     mdTofexp->Draw();
-    gPad->Print( "plot_dTofexp.pdf");
+    gPad->Print( "plot_dTofexp.png");
 
     makeCanvas();
     mddTof->SetLineColor(kBlack);
@@ -152,12 +250,114 @@ void eeAnalysis() {
     mddTof->GetXaxis()->SetTitle("#Delta #Delta TOF Distrubition (ns)");
     mddTof->GetYaxis()->SetTitle("Counts");
     mddTof->Draw();
+    */
+
+    //plot 1 as indicated above
+    makeCanvas();
+    massdiffcharges->SetLineColor(kBlack);
+    gPad->SetLogy();
+    massdiffcharges->GetXaxis()->SetTitle("M_{ee} (GeV/c^{2})");
+    massdiffcharges->GetYaxis()->SetTitle("Counts");
+    massdiffcharges->Draw();
+    masslikecharges->SetLineColor(kRed);
+    masslikecharges->Draw("same");
+
+    TH1F * diff = (TH1F*)massdiffcharges->Clone();
+
+    diff->Add(masslikecharges, -1);
+    diff->SetLineColor(kBlue);
+    diff->Draw("same");
+
+    auto * leg2 = new TLegend(0.75,0.5,.95,0.7);
+    leg2->SetHeader("Legend");
+    leg2->AddEntry(masslikecharges,"Like Charges","l");
+    leg2->AddEntry(massdiffcharges,"Unlike Charges","l");
+    leg2->AddEntry(diff, "Difference", "l");
+    leg2->Draw("same");
+    gPad->Print( "plot_mMass_by_chargesum.png" );
+
+
+
+    //plot 2.1 as indicated above
+    makeCanvas();
+    mMassPt->SetLineColor(kBlack);
+    mMassPt->GetXaxis()->SetTitle("M_{ee} (GeV/c^{2})");
+    mMassPt->GetYaxis()->SetTitle("Counts");
+    mMassPt->Draw();
+    gPad->SetLogy();
+
+    mMasschiPt->SetLineColor(kRed);
+    mMasschiPt->Draw("same");
+
+    mMasschiTofPt->SetLineColor(kBlue);
+    mMasschiTofPt->Draw("same");
+
+    auto * leg3 = new TLegend(0.75,0.5,.95,0.7);
+    leg3->SetHeader("Legend");
+    leg3->AddEntry(mMassPt,"Pt < 100 MeV","l");
+    leg3->AddEntry(mMasschiPt,"Pt + dE/dx -- #chi_{ee} < 5","l");
+    leg3->AddEntry(mMasschiTofPt, "Pt + dE/dx + TOF", "l");
+    leg3->Draw("same");
+    gPad->Print( "plot_mMassPt.png" );
+
+    makeCanvas();
+    //plot 2.2 as indicated above
+    PtcutoffMassdiffsign->SetLineColor(kBlack);
+    gPad->SetLogy();
+    PtcutoffMassdiffsign->GetXaxis()->SetTitle("M_{ee} (GeV/c^{2})");
+    PtcutoffMassdiffsign->GetYaxis()->SetTitle("Counts");
+    PtcutoffMassdiffsign->Draw();
+    PtcutoffMasslikesign->SetLineColor(kRed);
+    PtcutoffMasslikesign->Draw("same");
+
+    TH1F * diff2 = (TH1F*)PtcutoffMassdiffsign->Clone();
+
+    diff2->Add(PtcutoffMasslikesign, -1);
+    diff2->SetLineColor(kBlue);
+    diff2->Draw("same");
+
+    auto * leg4 = new TLegend(0.75,0.5,.95,0.7);
+    leg4->SetHeader("Legend");
+    leg4->AddEntry(PtcutoffMasslikesign,"Like Charges","l");
+    leg4->AddEntry(PtcutoffMassdiffsign,"Unlike Charges","l");
+    leg4->AddEntry(diff2, "Difference", "l");
+    leg4->Draw("same");
+    gPad->Print( "plot_mMass_by_chargesum_ptcutoff.png" );
+
+
+    makeCanvas();
+    //plot 3 as indicated above
+    Ptmcutdiffsign->SetLineColor(kBlack);
+    gPad->SetLogy();
+    Ptmcutdiffsign->GetXaxis()->SetTitle("Pt (GeV/c)");
+    Ptmcutdiffsign->GetYaxis()->SetTitle("Counts");
+    Ptmcutdiffsign->Draw();
+    Ptmcutlikesign->SetLineColor(kRed);
+    Ptmcutlikesign->Draw("same");
+
+    TH1F * diff3 = (TH1F*)Ptmcutdiffsign->Clone();
+    diff3->Add(Ptmcutlikesign, -1);
+    diff3->SetLineColor(kBlue);
+    diff3->Draw("same");
+
+    auto * leg5 = new TLegend(0.75,0.5,.95,0.7);
+    leg5->SetHeader("Legend");
+    leg5->AddEntry(Ptmcutlikesign,"Like Charges","l");
+    leg5->AddEntry(Ptmcutdiffsign,"Unlike Charges","l");
+    leg5->AddEntry(diff3, "Difference", "l");
+    leg5->Draw("same");
+    gPad->Print( "plot_Pt_by_chargesum_mcutoff.png" );
+
+    
+
+
+
 
     //mdTofexp->SetLineColor(kRed);
     //gPad->SetLogy();
     //mdTofexp->Draw();
 
-    gPad->Print( "plot_ddTof.pdf");
+    gPad->Print( "plot_ddTof.png");
 
 
 
