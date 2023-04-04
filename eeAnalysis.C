@@ -55,6 +55,8 @@ void eeAnalysis() {
    auto * mMassPt = new TH1F("mMass Pt Cut", "Parent Mass with P_{T} cutoff (GeV) (plot 2.1)", 500, 0, 4);
    auto * mMasschiPt = new TH1F("mMasschi Pt Cut", "Parent Mass (GeV)", 500, 0, 4);
    auto * mMasschiTofPt = new TH1F("mMasschiTof Pt Cut", "Parent Mass (GeV)", 500, 0, 4);
+   //auto * func = new TF1("fit", pow(x,[0]), 0, 4);
+   //func->SetParameter(0,-4);
 
    //for plot 2.2 indicated below
    auto * PtcutoffMasslikesign = new TH1F("mass_pt_cutoff", "Parent Mass for P_{T} < 100 MeV (plot 2.2)", 500, 0, 4);
@@ -65,7 +67,8 @@ void eeAnalysis() {
    auto * Ptmcutlikesign = new TH1F("Pt_mass_cutoff", "P_{T} for Parent Mass > 0.45 GeV (plot 3)", 500, 0, 1);
    auto * Ptmcutdiffsign = new TH1F("Pt_mass_cutoff", "P_{T} for Parent Mass > 0.45 GeV", 500, 0, 1);
 
-
+   //recreation of plot 77 from ee analysis note
+   auto * chiBands2d = new TH2F("Chi Squared Bands", "#chi^{2} Band Comparison", 200, 0, 200, 200, 0, 160);
 
    //1. make a plot of unlike-sign pairs and like-sign pairs, also show the difference between the two.
    //2. Make a plot of this plot (shown above) and #1 for a pT < 100 MeV cut, just to show how it changes the phase space distribution.
@@ -162,7 +165,7 @@ void eeAnalysis() {
         if(chiee < 5){
             mMasschi->Fill( lv.M() );
             if(ddTofVal < 0.5 && ddTofVal > -0.5){
-                mMasschiTof->Fill(lv.M());
+                mMasschiTof->Fill(lv.M());              
             }
         }
 
@@ -170,9 +173,13 @@ void eeAnalysis() {
         if( mVertexZVal < 100 && mVertexZVal > -100 && mGRefMultVal <= 4) {
             //now for some track cuts
             if( ddTofVal < 0.4 && ddTofVal > -0.4 && chiee < 10 && 3*chiee < chipipi) {
-                mPt->Fill( lv.Pt() );
-            
+                mPt->Fill( lv.Pt() );           
             }
+        }
+
+        //Figure 77 recreation
+        if (ddTofVal < 0.3 && ddTofVal > -0.3) {
+            chiBands2d->Fill(chipipi, chiee);  
         }
 
         mGRefMult->Fill( mGRefMultVal );
@@ -250,6 +257,7 @@ void eeAnalysis() {
     mddTof->GetXaxis()->SetTitle("#Delta #Delta TOF Distrubition (ns)");
     mddTof->GetYaxis()->SetTitle("Counts");
     mddTof->Draw();
+    gPad->Print( "plot_ddTof.png");
     */
 
     //plot 1 as indicated above
@@ -291,6 +299,7 @@ void eeAnalysis() {
 
     mMasschiTofPt->SetLineColor(kBlue);
     mMasschiTofPt->Draw("same");
+    //mMasschiTofPt->Fit("fit");
 
     auto * leg3 = new TLegend(0.75,0.5,.95,0.7);
     leg3->SetHeader("Legend");
@@ -348,6 +357,14 @@ void eeAnalysis() {
     leg5->Draw("same");
     gPad->Print( "plot_Pt_by_chargesum_mcutoff.png" );
 
+    //Figure 77
+    makeCanvas();
+    gPad->SetLogz();
+    chiBands2d->SetContour(100);
+    chiBands2d->GetXaxis()->SetTitle("#chi_{#pi#pi}^{2}");
+    chiBands2d->GetYaxis()->SetTitle("#chi_{ee}^{2}");
+    chiBands2d->Draw("colz");
+
     
 
 
@@ -357,7 +374,6 @@ void eeAnalysis() {
     //gPad->SetLogy();
     //mdTofexp->Draw();
 
-    gPad->Print( "plot_ddTof.png");
 
 
 
