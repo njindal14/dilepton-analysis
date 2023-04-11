@@ -116,7 +116,10 @@ void eeAnalysis() {
         //need to calculate different efficiencies and use to find differential cross section
         //how to calculate differential cross section?
 
-        
+        //Figure 77 recreation
+        if (ddTofVal < 0.3 && ddTofVal > -0.3) {
+            chiBands2d->Fill(chipipi, chiee);  
+        }
 
         mdTof->Fill( dTofVal );
         mdTofexp->Fill( dTofexpVal );
@@ -177,10 +180,7 @@ void eeAnalysis() {
             }
         }
 
-        //Figure 77 recreation
-        if (ddTofVal < 0.3 && ddTofVal > -0.3) {
-            chiBands2d->Fill(chipipi, chiee);  
-        }
+    
 
         mGRefMult->Fill( mGRefMultVal );
 
