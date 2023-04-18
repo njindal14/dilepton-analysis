@@ -46,6 +46,7 @@ void bettereeAnalysis() {
    //Plot 2
    auto * mMassPt = new TH1F("mMass Pt Cut", "Parent Mass with P_{T} cutoff (GeV) (Plot 2)", 500, 0, 4);
    auto * mMass = new TH1F("mMass", "Parent Mass with P_{T} cutoff (GeV/c^{2}) (Plot 2)", 500, 0, 4); 
+   auto * mMassPtFit = new TH1F("mMassPtFit", "Fit (Plot 2)", 500, 0,4);
 
    //Plot 3
    auto * Ptmasslikecharges = new TH1F("Mass_hist3", "Charge Sum-Separated Parent Mass (GeV) (Plot 3)", 500, 0, 4 );
@@ -119,7 +120,7 @@ void bettereeAnalysis() {
        if( mVertexZVal < 100 && mVertexZVal > -100 && mGRefMultVal <= 4) {
             //now for some track cuts
             //For plot 5:
-            if(ddTofVal < 0.4 && ddTofVal > -0.4){
+            if(ddTofVal < 0.5 && ddTofVal > -0.5){
                 chiBands2D->Fill(chipipi, chiee);   
             }
 
@@ -151,7 +152,11 @@ void bettereeAnalysis() {
                 mMass->Fill( lv.M() );
                 if(lv.Pt() < 0.1 ){
                     mMassPt->Fill(lv.M());
-                }     
+                    if(lv.M() > 0.5 && lv.M() < 1.5){
+                    mMassPtFit->Fill(lv.M());
+                }  
+                }  
+                 
             }
         }
 
@@ -198,13 +203,16 @@ void bettereeAnalysis() {
     mMassPt->SetLineColor(kRed);
     mMassPt->Draw("same");
     //fit that doesn't work
-    mMassPt->Fit("expo");
+    mMassPtFit->SetLineColor(kBlue);
+    mMassPtFit->Draw("same");
+    mMassPtFit->Fit("expo");
     //mMasschiTofPt->Fit("fit");
 
     auto * leg3 = new TLegend(0.75,0.5,.95,0.7);
     leg3->SetHeader("Legend");
     leg3->AddEntry(mMass, "PID cuts","l");
     leg3->AddEntry(mMassPt,"PID cuts and Pt < 100 MeV/c ","l");
+    leg3->AddEntry(mMassPtFit, "PID cuts, Pt < 100 MeV/c, only section for Fit", "l");
     leg3->Draw("same");
     gPad->Print( "plot_mMassPt.png" );
 
