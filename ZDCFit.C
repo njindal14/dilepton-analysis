@@ -40,6 +40,24 @@ void ZDCFit() {
     auto * mZDCEast = new TH1F("mZDCEast", "ZDCEast", 1200, 0, 1200);
     auto * mZDCWest = new TH1F("mZDCWest", "ZDCWest", 1200, 0, 1200);
 
+    auto * mZDCEast1n1n = new TH1F("mZDCEast Separated", "ZDCEast Separated", 1200, 0, 1200);
+    auto * mZDCWest1n1n = new TH1F("mZDCWest Separated", "ZDCWest Separated", 1200, 0, 1200);
+
+    auto * mZDCEast2n2n = new TH1F("mZDCEast Separated", "ZDCEast Separated", 1200, 0, 1200);
+    auto * mZDCWest2n2n = new TH1F("mZDCWest Separated", "ZDCWest Separated", 1200, 0, 1200);
+
+    auto * mZDCEast3n3nPlus = new TH1F("mZDCEast3n3nPlus", "ZDCEast3n3nPlus", 1200, 0, 1200);
+    auto * mZDCWest3n3nPlus = new TH1F("mZDCWest3n3nPlus", "ZDCWest3n3nPlus", 1200, 0, 1200);
+
+    auto * mPt1n1n = new TH1F("Pair Transverse Momentum", "Pair Transverse Momentum", 600, 0, 3);
+    auto * mPt2n2n = new TH1F("Pair Transverse Momentum", "Pair Transverse Momentum", 600, 0, 3);
+    auto * mPt3n3nPlus = new TH1F("Pair Transverse Momentum", "Pair Transverse Momentum", 600, 0, 3);
+
+
+
+
+
+
     auto * ZDC2D = new TH2F("ZDC Heat Map", "ZDC Heat Map", 1200, 0, 1200, 1200, 0, 1200);
 
 
@@ -74,14 +92,46 @@ void ZDCFit() {
         UShort_t mZDCWestVal = pair->mZDCWest;
         UShort_t mZDCEastVal2 = pair->mZDCEast;
         UShort_t mZDCWestVal2 = pair->mZDCWest;
+        Float_t mPtVal = pair->mPt;
 
 
-        if(mZDCWestVal > 30 ){
-            mZDCWest->Fill( mZDCWestVal );
+
+        if(mZDCWestVal > 30  ){
+            mZDCWest->Fill( mZDCWestVal  );
+            //mZDCWestVal < 52.68+3*15.35 && mZDCWestVal > 52.68-3*15.35 && 
+            //&& mZDCEastVal < 51.12+3*14.27 && mZDCEastVal > 51.12-3*14.27
         }
-        if(mZDCEastVal > 30 && mZDCWestVal < 177.6+3*21.83 && mZDCWestVal > 177.6-3*21.83){
+        if(mZDCEastVal > 30  ){
             mZDCEast->Fill( mZDCEastVal );
+            //&& mZDCEastVal < 51.12+3*14.27 && mZDCEastVal > 51.12-3*14.27
+            //&& mZDCWestVal < 52.68+3*15.35 && mZDCWestVal > 52.68-3*15.35
         }
+        //1n1n cuts
+        if(mZDCEastVal > 30 && mZDCEastVal < 51.12+2*14.27 && mZDCEastVal > 51.12-2*14.27
+            && mZDCWestVal < 52.68+2*15.35 && mZDCWestVal > 52.68-2*15.35){
+                mZDCEast1n1n->Fill( mZDCEastVal);
+            }
+        if(mZDCWestVal > 30 && mZDCEastVal < 51.12+2*14.27 && mZDCEastVal > 51.12-2*14.27
+            && mZDCWestVal < 52.68+2*15.35 && mZDCWestVal > 52.68-2*15.35){
+                mZDCWest1n1n->Fill( mZDCWestVal);
+                mPt1n1n->Fill(mPtVal);
+            }
+
+        //2n2n cuts
+        if(mZDCEastVal > 30 && mZDCEastVal < 110.1+2*25.42 && mZDCEastVal > 110.1-2*25.42
+            && mZDCWestVal < 115.7+2*28.92 && mZDCWestVal > 115.7-2*28.92){
+                mZDCWest2n2n->Fill(mZDCWestVal);
+                mZDCEast2n2n->Fill(mZDCEastVal);
+                mPt2n2n->Fill(mPtVal);
+            }
+
+        //3n3nPlus cuts
+        if(mZDCEastVal > 30 && mZDCEastVal > 177.6-2*21.83 && mZDCWestVal > 193.9 -2*28.46){
+                mZDCWest3n3nPlus->Fill(mZDCWestVal);
+                mZDCEast3n3nPlus->Fill(mZDCEastVal);
+                mPt3n3nPlus->Fill(mPtVal);
+            }
+
 
         //if(chiee < 10 && 3*chiee < chipipi){
             ZDC2D->Fill(mZDCEastVal2, mZDCWestVal2);
@@ -157,7 +207,7 @@ g4->Draw("same");
 g5->SetLineColor(kGray);
 g5->SetLineWidth(4);
 g5->Draw("same");
-gPad->Print( "plot_mZDCEast2Fit3nPeakLim.png" );
+gPad->Print( "plot_mZDCEast2Fit1n1n.png" );
 
 
 
@@ -230,7 +280,7 @@ g4w->Draw("same");
 g5w->SetLineColor(kGray);
 g5w->SetLineWidth(4);
 g5w->Draw("same");
-gPad->Print( "plot_mZDCWest2Fit.png" );
+gPad->Print( "plot_mZDCWest2Fit1n1n.png" );
 
 
 
@@ -243,5 +293,90 @@ ZDC2D->GetYaxis()->SetTitle("ADC ZDC West");
 gStyle->SetPalette(1);
 ZDC2D->Draw("colz");
 gPad->Print( "ZDC2DWideNocut.png" );
+
+makeCanvas3();
+mZDCEast1n1n->SetLineColor(kBlack);
+mZDCEast1n1n->GetXaxis()->SetTitle("ADC ZDC East");
+mZDCEast1n1n->GetYaxis()->SetTitle("Counts");
+mZDCEast1n1n->Draw();
+//gPad->Print( "ZDCEast1n1n.png" );
+
+
+//makeCanvas3();
+mZDCEast2n2n->SetLineColor(kRed);
+//mZDCEast2n2n->GetXaxis()->SetTitle("ZDC East 2n2n");
+//mZDCEast2n2n->GetYaxis()->SetTitle("Counts");
+mZDCEast2n2n->Draw("same");
+//gPad->Print( "ZDCEast2n2n.png" );
+
+
+//makeCanvas3();
+mZDCEast3n3nPlus->SetLineColor(kGreen);
+//mZDCEast3n3nPlus->GetXaxis()->SetTitle("ZDC East 3n3nPlus");
+//mZDCEast3n3nPlus->GetYaxis()->SetTitle("Counts");
+mZDCEast3n3nPlus->Draw("same");
+
+auto * legend = new TLegend(0.75,0.5,.95,0.6);
+legend->SetHeader("Legend");
+legend->AddEntry(mZDCEast1n1n,"1n1n Peak","l");
+legend->AddEntry(mZDCEast2n2n,"2n2n Peak","l");
+legend->AddEntry(mZDCEast3n3nPlus, "3n3nPlus Peak", "l");
+legend->Draw("same");
+
+gPad->Print( "ZDCEastSeparated2SigmaCuts.png" );
+
+
+
+makeCanvas3();
+mZDCWest1n1n->SetLineColor(kBlack);
+mZDCWest1n1n->GetXaxis()->SetTitle("ADC ZDC West");
+mZDCWest1n1n->GetYaxis()->SetTitle("Counts");
+mZDCWest1n1n->Draw();
+//gPad->Print( "ZDCWestSeparated.png" );
+
+//makeCanvas3();
+mZDCWest2n2n->SetLineColor(kRed);
+//mZDCWest2n2n->GetXaxis()->SetTitle("ZDC West 2n2n");
+//mZDCWest2n2n->GetYaxis()->SetTitle("Counts");
+mZDCWest2n2n->Draw("same");
+//gPad->Print( "ZDCWest2n2n.png" );
+
+
+//makeCanvas3();
+mZDCWest3n3nPlus->SetLineColor(kGreen);
+//mZDCWest3n3nPlus->GetXaxis()->SetTitle("ZDC West 3n3nPlus");
+//mZDCWest3n3nPlus->GetYaxis()->SetTitle("Counts");
+mZDCWest3n3nPlus->Draw("same");
+
+auto * legend2 = new TLegend(0.75,0.5,.95,0.6);
+legend2->SetHeader("Legend");
+legend2->AddEntry(mZDCWest1n1n,"1n1n Peak","l");
+legend2->AddEntry(mZDCWest2n2n,"2n2n Peak","l");
+legend2->AddEntry(mZDCWest3n3nPlus, "3n3nPlus Peak", "l");
+legend2->Draw("same");
+gPad->Print( "ZDCWestSeparated2SigmaCuts.png" );
+
+makeCanvas3();
+mPt3n3nPlus->SetLineColor(kGreen);
+mPt3n3nPlus->GetXaxis()->SetTitle("Pt (GeV/c)");
+mPt3n3nPlus->GetYaxis()->SetTitle("Counts");
+mPt3n3nPlus->Draw();
+
+mPt2n2n->SetLineColor(kRed);
+mPt2n2n->Draw("same");
+
+mPt1n1n->SetLineColor(kBlack);
+mPt1n1n->Draw("same");
+
+auto * legend3 = new TLegend(0.75,0.5,.95,0.6);
+legend3->SetHeader("Legend");
+legend3->AddEntry(mPt1n1n,"Pt 1n1n Peak","l");
+legend3->AddEntry(mPt2n2n,"Pt 2n2n Peak","l");
+legend3->AddEntry(mPt3n3nPlus, "Pt 3n3nPlus Peak", "l");
+legend3->Draw("same");
+gPad->SetLogy();
+gPad->Print( "PtXnXnSeparated.png" );
+
+
 
 }
