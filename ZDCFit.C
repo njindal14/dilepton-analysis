@@ -15,7 +15,7 @@ int ican6 = 0;
 void makeCanvas3() {
     TCanvas * can = new TCanvas( TString::Format( "can%d", ican6++ ), "", 900, 600 );
     can->SetTopMargin(0.04);
-    can->SetRightMargin(0.01);
+    can->SetRightMargin(0.2);
 }
 
 double ZDCfitfunc(double *x, double *par){
@@ -37,21 +37,24 @@ void ZDCFit() {
     // Create a histogram for the values we read.
     TH1F("h1", "ntuple", 100, -4, 4);
 
-    auto * mZDCEast = new TH1F("mZDCEast", "ZDCEast", 1200, 0, 1200);
-    auto * mZDCWest = new TH1F("mZDCWest", "ZDCWest", 1200, 0, 1200);
+    auto * mZDCEast = new TH1F("mZDCEast, ee Events", "ZDCEast", 1200, 0, 1200);
+    auto * mZDCWest = new TH1F("mZDCWest, ee Events", "ZDCWest", 1200, 0, 1200);
 
-    auto * mZDCEast1n1n = new TH1F("mZDCEast Separated", "ZDCEast Separated", 1200, 0, 1200);
-    auto * mZDCWest1n1n = new TH1F("mZDCWest Separated", "ZDCWest Separated", 1200, 0, 1200);
+    auto * mZDCEast1n1n = new TH1F("mZDCEast Separated, ee Events", "ZDCEast Separated", 1200, 0, 1200);
+    auto * mZDCWest1n1n = new TH1F("mZDCWest Separated, ee Events", "ZDCWest Separated", 1200, 0, 1200);
 
-    auto * mZDCEast2n2n = new TH1F("mZDCEast Separated", "ZDCEast Separated", 1200, 0, 1200);
-    auto * mZDCWest2n2n = new TH1F("mZDCWest Separated", "ZDCWest Separated", 1200, 0, 1200);
+    auto * mZDCEast2n2n = new TH1F("mZDCEast Separated, ee Events", "ZDCEast Separated", 1200, 0, 1200);
+    auto * mZDCWest2n2n = new TH1F("mZDCWest Separated, ee Events", "ZDCWest Separated", 1200, 0, 1200);
 
     auto * mZDCEast3n3nPlus = new TH1F("mZDCEast3n3nPlus", "ZDCEast3n3nPlus", 1200, 0, 1200);
     auto * mZDCWest3n3nPlus = new TH1F("mZDCWest3n3nPlus", "ZDCWest3n3nPlus", 1200, 0, 1200);
 
-    auto * mPt1n1n = new TH1F("Pair Transverse Momentum", "Pair Transverse Momentum", 600, 0, 3);
-    auto * mPt2n2n = new TH1F("Pair Transverse Momentum", "Pair Transverse Momentum", 600, 0, 3);
-    auto * mPt3n3nPlus = new TH1F("Pair Transverse Momentum", "Pair Transverse Momentum", 600, 0, 3);
+    auto * mPt1n1n = new TH1F("Pair Transverse Momentum, ee Events", "Pair Transverse Momentum", 300, 0, .1);
+    auto * mPt2n2n = new TH1F("Pair Transverse Momentum, ee Events", "Pair Transverse Momentum", 300, 0, .1);
+    auto * mPt3n3nPlusLikeSign = new TH1F("Pair Transverse Momentum, ee Events", "Pair Transverse Momentum", 600, 0, .1);
+    auto * mPt3n3nPlusUnlikeSign = new TH1F("Pair Transverse Momentum, ee Events", "Pair Transverse Momentum", 600, 0, .1);
+
+
 
 
 
@@ -84,6 +87,9 @@ void ZDCFit() {
     TTreeReaderValue<FemtoPair> pair(myReader, "Pairs");
 
     //TLorentzVector lv1, lv2, lv, lvn;
+    int counter1 = 0;
+    int counter2 = 0;
+    int counter3 = 0;
 
     while (myReader.Next()) {
         double chiee = pow( pair->d1_mNSigmaElectron, 2 ) + pow( pair->d2_mNSigmaElectron, 2 );
@@ -93,52 +99,84 @@ void ZDCFit() {
         UShort_t mZDCEastVal2 = pair->mZDCEast;
         UShort_t mZDCWestVal2 = pair->mZDCWest;
         Float_t mPtVal = pair->mPt;
+        int chargesumval = pair->mChargeSum;
 
+        if(chiee < 10 && 3*chiee < chipipi){
 
-
-        if(mZDCWestVal > 30  ){
-            mZDCWest->Fill( mZDCWestVal  );
+            if(mZDCWestVal > 30  ){
+                mZDCWest->Fill( mZDCWestVal  );
             //mZDCWestVal < 52.68+3*15.35 && mZDCWestVal > 52.68-3*15.35 && 
             //&& mZDCEastVal < 51.12+3*14.27 && mZDCEastVal > 51.12-3*14.27
-        }
-        if(mZDCEastVal > 30  ){
-            mZDCEast->Fill( mZDCEastVal );
+            }
+            if(mZDCEastVal > 30  ){
+                mZDCEast->Fill( mZDCEastVal );
             //&& mZDCEastVal < 51.12+3*14.27 && mZDCEastVal > 51.12-3*14.27
             //&& mZDCWestVal < 52.68+3*15.35 && mZDCWestVal > 52.68-3*15.35
-        }
-        //1n1n cuts
-        if(mZDCEastVal > 30 && mZDCEastVal < 51.12+2*14.27 && mZDCEastVal > 51.12-2*14.27
-            && mZDCWestVal < 52.68+2*15.35 && mZDCWestVal > 52.68-2*15.35){
-                mZDCEast1n1n->Fill( mZDCEastVal);
             }
-        if(mZDCWestVal > 30 && mZDCEastVal < 51.12+2*14.27 && mZDCEastVal > 51.12-2*14.27
-            && mZDCWestVal < 52.68+2*15.35 && mZDCWestVal > 52.68-2*15.35){
-                mZDCWest1n1n->Fill( mZDCWestVal);
-                mPt1n1n->Fill(mPtVal);
+            //1n1n cuts
+            if(mZDCEastVal > 30 && mZDCWestVal > 30 && mZDCEastVal < 80
+                && mZDCWestVal < 80){
+                    mZDCEast1n1n->Fill( mZDCEastVal);          
+                    mZDCWest1n1n->Fill( mZDCWestVal);
+                    counter1 +=1;
+                    mPt1n1n->Fill(mPtVal);
+                }
+
+            //2n2n cuts
+            if(mZDCEastVal > 30 && mZDCWestVal > 30 && mZDCEastVal < 155 && mZDCEastVal > 80
+                && mZDCWestVal < 155 && mZDCWestVal > 80){
+                    mZDCWest2n2n->Fill(mZDCWestVal);
+                    mZDCEast2n2n->Fill(mZDCEastVal);
+                    counter2 +=1;
+                    mPt2n2n->Fill(mPtVal);
+                }
+
+            //3n3nPlus cuts
+            if(mZDCEastVal > 155 && mZDCWestVal > 155){
+                    mZDCWest3n3nPlus->Fill(mZDCWestVal);
+                    mZDCEast3n3nPlus->Fill(mZDCEastVal);
+                    counter3 +=1;
+                    if(chargesumval==0){
+                        mPt3n3nPlusUnlikeSign->Fill(mPtVal);
+                    }
+                    else{
+                        mPt3n3nPlusLikeSign->Fill(mPtVal);
+                    }
+                }
+
+
+            //if(chiee < 10 && 3*chiee < chipipi){
+                ZDC2D->Fill(mZDCEastVal2, mZDCWestVal2);
+            //}
             }
-
-        //2n2n cuts
-        if(mZDCEastVal > 30 && mZDCEastVal < 110.1+2*25.42 && mZDCEastVal > 110.1-2*25.42
-            && mZDCWestVal < 115.7+2*28.92 && mZDCWestVal > 115.7-2*28.92){
-                mZDCWest2n2n->Fill(mZDCWestVal);
-                mZDCEast2n2n->Fill(mZDCEastVal);
-                mPt2n2n->Fill(mPtVal);
-            }
-
-        //3n3nPlus cuts
-        if(mZDCEastVal > 30 && mZDCEastVal > 177.6-2*21.83 && mZDCWestVal > 193.9 -2*28.46){
-                mZDCWest3n3nPlus->Fill(mZDCWestVal);
-                mZDCEast3n3nPlus->Fill(mZDCEastVal);
-                mPt3n3nPlus->Fill(mPtVal);
-            }
-
-
-        //if(chiee < 10 && 3*chiee < chipipi){
-            ZDC2D->Fill(mZDCEastVal2, mZDCWestVal2);
-        //}
 
 
     }
+    cout << counter1;
+    cout << "first";
+    cout << counter2;
+    cout << "second";
+    cout << counter3;
+
+    auto * projEast = ZDC2D->ProjectionX("ZDCEastcut1nw", 30, 90);
+    auto * projWest = ZDC2D->ProjectionY("ZDCWestcut1ne", 30, 90);
+
+
+makeCanvas3();
+projEast->SetLineColor(kBlack);
+projEast->Fit("fit","","",30,1200);
+gStyle->SetOptFit(1111);
+projEast->Draw();
+gPad->Print( "plot_mZDC2DEastProjection1n.png" );
+
+
+makeCanvas3();
+projWest->SetLineColor(kRed);
+projWest->Fit("fit","","",30,1200);
+gStyle->SetOptFit(1111);
+projWest->Draw();
+gPad->Print( "plot_mZDC2DWestProjection1n.png" );
+
 
 
 makeCanvas3();
@@ -207,7 +245,7 @@ g4->Draw("same");
 g5->SetLineColor(kGray);
 g5->SetLineWidth(4);
 g5->Draw("same");
-gPad->Print( "plot_mZDCEast2Fit1n1n.png" );
+gPad->Print( "plot_mZDCEast2FitBW.png" );
 
 
 
@@ -280,7 +318,7 @@ g4w->Draw("same");
 g5w->SetLineColor(kGray);
 g5w->SetLineWidth(4);
 g5w->Draw("same");
-gPad->Print( "plot_mZDCWest2Fit1n1n.png" );
+gPad->Print( "plot_mZDCWest2FitBW.png" );
 
 
 
@@ -292,7 +330,8 @@ ZDC2D->GetXaxis()->SetTitle("ADC ZDC East");
 ZDC2D->GetYaxis()->SetTitle("ADC ZDC West");
 gStyle->SetPalette(1);
 ZDC2D->Draw("colz");
-gPad->Print( "ZDC2DWideNocut.png" );
+gStyle->SetPalette(1);
+gPad->Print( "ZDC2DWide.png" );
 
 makeCanvas3();
 mZDCEast1n1n->SetLineColor(kBlack);
@@ -323,7 +362,7 @@ legend->AddEntry(mZDCEast2n2n,"2n2n Peak","l");
 legend->AddEntry(mZDCEast3n3nPlus, "3n3nPlus Peak", "l");
 legend->Draw("same");
 
-gPad->Print( "ZDCEastSeparated2SigmaCuts.png" );
+gPad->Print( "ZDCEastSeparated2VisualCutsBW.png" );
 
 
 
@@ -354,28 +393,40 @@ legend2->AddEntry(mZDCWest1n1n,"1n1n Peak","l");
 legend2->AddEntry(mZDCWest2n2n,"2n2n Peak","l");
 legend2->AddEntry(mZDCWest3n3nPlus, "3n3nPlus Peak", "l");
 legend2->Draw("same");
-gPad->Print( "ZDCWestSeparated2SigmaCuts.png" );
+gPad->Print( "ZDCWestSeparatedVisualCutsBW.png" );
 
 makeCanvas3();
-mPt3n3nPlus->SetLineColor(kGreen);
-mPt3n3nPlus->GetXaxis()->SetTitle("Pt (GeV/c)");
-mPt3n3nPlus->GetYaxis()->SetTitle("Counts");
-mPt3n3nPlus->Draw();
+mPt3n3nPlusUnlikeSign->SetLineColor(kGreen);
+mPt3n3nPlusUnlikeSign->GetXaxis()->SetTitle("Pt (GeV/c)");
+mPt3n3nPlusUnlikeSign->GetYaxis()->SetTitle("Counts");
+mPt3n3nPlusUnlikeSign->Draw();
+mPt3n3nPlusLikeSign->SetLineColor(kBlue);
+mPt3n3nPlusLikeSign->Draw("same");
+
+TH1F * diff = (TH1F*)mPt3n3nPlusUnlikeSign->Clone();
+diff->Add(mPt3n3nPlusLikeSign, -1);
+diff->SetLineColor(kPink);
+diff->Draw("same");
+
+
 
 mPt2n2n->SetLineColor(kRed);
-mPt2n2n->Draw("same");
+//mPt2n2n->Draw("same");
 
 mPt1n1n->SetLineColor(kBlack);
-mPt1n1n->Draw("same");
+//mPt1n1n->Draw("same");
 
 auto * legend3 = new TLegend(0.75,0.5,.95,0.6);
 legend3->SetHeader("Legend");
 legend3->AddEntry(mPt1n1n,"Pt 1n1n Peak","l");
 legend3->AddEntry(mPt2n2n,"Pt 2n2n Peak","l");
-legend3->AddEntry(mPt3n3nPlus, "Pt 3n3nPlus Peak", "l");
+legend3->AddEntry(mPt3n3nPlusLikeSign, "Pt 3n3nPlus Peak Like Sign", "l");
+legend3->AddEntry(mPt3n3nPlusUnlikeSign, "Pt 3n3nPlus Peak Unlike Sign", "l");
+legend3->AddEntry(diff, "Pt 3n3nPlus Peak unlike-like", "l");
+
 legend3->Draw("same");
 gPad->SetLogy();
-gPad->Print( "PtXnXnSeparated.png" );
+gPad->Print( "PtXnXnSeparatedVisualCutsbySignBW.png" );
 
 
 
