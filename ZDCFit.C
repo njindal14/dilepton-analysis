@@ -82,13 +82,18 @@ void ZDCFit() {
     auto * mPt3n3nPlusLikeSign = new TH1F("Pair Transverse Momentum, ee Events", "Pair Transverse Momentum", 100, 0, .15);
     auto * mPt3n3nPlusUnlikeSign = new TH1F("Pair Transverse Momentum, ee Events", "Pair Transverse Momentum", 100, 0, .15);
 
-
-    auto * numNeutronsEast = new TH1F("Continuous Number of Neutrons East", "Neutrons East", 200, 0, 5);
     auto * mPt = new TH1F("mPt, PID, M_{ee} + TOF Cuts", "Parent Transverse Momentum (Gev/c)", 500, 0, 1);
+    auto * mPt2 = new TH1F("mPt^{2}, PID, M_{ee} + TOF Cuts", "Parent Transverse Momentum Squared (Gev/c)^{2}", 500, 0, 0.2);
 
+
+
+
+    auto * numNeutronsEast = new TH1F("Continuous Number of Neutrons East", "Neutrons East", 100, 0, 5);
     auto * numNeutronsvPtEast = new TH2F("Neutrons East Vs. P_{T}", "Neutrons East Vs P_{T}", 500, 0, .15, 20, 0,5);
+    auto * numNeutronsvPt2East = new TH2F("Neutrons East Vs. P_{T}^{2}", "Neutrons East Vs P_{T}^{2}", 500, 0, .2, 20, 0,5);
 
-    auto * numNeutronsWest = new TH1F("Continuous Number of Neutrons West", "Neutrons West", 200, 0, 5);
+
+    auto * numNeutronsWest = new TH1F("Continuous Number of Neutrons West", "Neutrons West", 100, 0, 5);
     auto * numNeutronsvPtWest = new TH2F("Neutrons West Vs. P_{T}", "Neutrons West Vs P_{T}", 500, 0, .15, 20, 0,5);
 
 
@@ -209,6 +214,8 @@ void ZDCFit() {
                         double numNeutronseast = calcNeutrons(mZDCEastVal, 52.12, 12.75, 109.4, 25.3, 172.8, 20);
                         numNeutronsEast->Fill(numNeutronseast);
                         numNeutronsvPtEast->Fill(mPtVal, numNeutronseast);
+                        numNeutronsvPt2East->Fill(mPtVal*mPtVal, numNeutronseast);
+
                     }
                 }
 
@@ -522,23 +529,78 @@ makeCanvas3();
 //gPad->SetLogz();
 numNeutronsvPtEast->SetContour(100);
 numNeutronsvPtEast->GetXaxis()->SetTitle("P_{T}");
-numNeutronsvPtEast->GetYaxis()->SetTitle("Number of Neutrons (Weighted)");
+numNeutronsvPtEast->GetYaxis()->SetTitle("Number of Neutrons (Weighted) East");
 numNeutronsvPtEast->Draw("colz");
 gStyle->SetPalette(1);
 gPad->Print("plots/neutronseastvPt.png");
 
+makeCanvas3();
+numNeutronsWest->SetLineColor(kBlack);
+numNeutronsWest->GetXaxis()->SetTitle("Number of Neutrons ZDC West");
+numNeutronsWest->GetYaxis()->SetTitle("Counts");
+numNeutronsWest->Draw();
+gPad->Print("plots/neutronsWestWeighted.png");
+
+makeCanvas3();
+//gPad->SetLogz();
+numNeutronsvPtWest->SetContour(100);
+numNeutronsvPtWest->GetXaxis()->SetTitle("P_{T}");
+numNeutronsvPtWest->GetYaxis()->SetTitle("Number of Neutrons (Weighted) West");
+numNeutronsvPtWest->Draw("colz");
+gStyle->SetPalette(1);
+gPad->Print("plots/neutronswestvPt.png");
+
 
 auto *numNeutronsEastvPtProjection = numNeutronsvPtEast->ProfileY("numNeutronsEastvPtProjection", 1, -1);
+auto *numNeutronsEastvPt2Projection = numNeutronsvPt2East->ProfileY("numNeutronsEastvPt2Projection", 1, -1);
 auto *numNeutronsWestvPtProjection = numNeutronsvPtWest->ProfileY("numNeutronsWestvPtProjection", 1, -1);
 
 
+
 makeCanvas3();
-numNeutronsEastvPtProjection->SetTitle("P_{T} Vs. Weighted East Neutron Mult");
-numNeutronsEastvPtProjection->GetXaxis()->SetTitle("Neutron Multiplicity East");
-numNeutronsEastvPtProjection->GetYaxis()->SetTitle("P_{T}");
-numNeutronsEastvPtProjection->SetLineColor(kBlack);
-numNeutronsEastvPtProjection->Draw();
-gPad->Print( "plots/neutronmulteastvPt.png");
+numNeutronsEastvPt2Projection->SetTitle("P_{T}^{2} Vs. Weighted East Neutron Mult");
+numNeutronsEastvPt2Projection->GetXaxis()->SetTitle("Neutron Multiplicity East");
+numNeutronsEastvPt2Projection->GetYaxis()->SetTitle("P_{T}^{2} (GeV/c)^{2}");
+numNeutronsEastvPt2Projection->SetLineColor(kBlack);
+numNeutronsEastvPt2Projection->Draw();
+gPad->Print( "plots/neutronmulteastvPt2.png");
+
+
+//TH2D * rmsPtNeutronMultEast = (TH2D*)numNeutronsEastvPt2Projection->Clone("rmsPtNeutronMultEast");
+TH2D * rmsPtNeutronMultEast = new TH2D("test", "test", 20, 0, 5, 1, 0, .1);
+int nBinsx = rmsPtNeutronMultEast->GetNbinsX();
+int nBinsy = rmsPtNeutronMultEast->GetNbinsY();
+
+cout << "nbinsx " << nBinsx;
+cout << "nbinsy " << nBinsy << " ";
+double x[20], y[20];
+
+for(int binx = 1; binx <= nBinsx ;binx++){
+    cout << "bin content: " << numNeutronsEastvPt2Projection->GetBinContent(binx);
+    double rmsVal = sqrt(numNeutronsEastvPt2Projection->GetBinContent(binx));
+    cout << "rms value: " << rmsVal;
+    rmsPtNeutronMultEast->SetBinContent(binx, rmsVal);
+    cout << "binx " << binx;
+    //rmsPtNeutronMultEast->SetBinError(binx, 0.5*(numNeutronsEastvPt2Projection->GetBinError(binx)/(numNeutronsEastvPt2Projection->GetBinContent(binx))));
+    cout << " final value " << rmsPtNeutronMultEast->GetBinContent(binx);
+    x[binx] = binx;
+    y[binx] = rmsVal;
+    //}
+
+}
+
+makeCanvas3();
+auto * rms = new TGraph(20,x,y);
+rms->SetTitle("RMS ;bin; Pt rms");
+rms->Draw("AC*");
+
+makeCanvas3();
+rmsPtNeutronMultEast->SetLineColor(kBlack);
+rmsPtNeutronMultEast->SetTitle("RMS of P_{T} by Neutron Multiplicity");
+rmsPtNeutronMultEast->GetXaxis()->SetTitle("Neutron Multiplicity East");
+rmsPtNeutronMultEast->GetYaxis()->SetTitle("#sqrt(<P_{T}^{2}>)");
+rmsPtNeutronMultEast->Draw();
+
 
 makeCanvas3();
 numNeutronsWestvPtProjection->SetTitle("P_{T} Vs. Weighted West Neutron Mult");
@@ -547,6 +609,14 @@ numNeutronsWestvPtProjection->GetYaxis()->SetTitle("P_{T}");
 numNeutronsWestvPtProjection->SetLineColor(kRed);
 numNeutronsWestvPtProjection->Draw();
 gPad->Print( "plots/neutronmultwestvPt.png");
+
+makeCanvas3();
+numNeutronsEastvPtProjection->SetTitle("P_{T} Vs. Weighted East Neutron Mult");
+numNeutronsEastvPtProjection->GetXaxis()->SetTitle("Neutron Multiplicity East");
+numNeutronsEastvPtProjection->GetYaxis()->SetTitle("P_{T}");
+numNeutronsEastvPtProjection->SetLineColor(kBlack);
+numNeutronsEastvPtProjection->Draw();
+gPad->Print( "plots/neutronmulteastvPt.png");
 
 
 
