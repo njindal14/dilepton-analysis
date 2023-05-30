@@ -28,6 +28,12 @@ double ddToffit(double *x, double *par){
     return fitval;
 }
 
+double phiFit(double *x, double *par){
+    double fitval;
+    fitval = par[0]*(1+par[1]*cos(x[0]) + par[2]*cos(2*x[0]) + par[3]*cos(3*x[0]) + par[4]*cos(4*x[0]));
+    return fitval;
+}
+
 double calc_Phi( TLorentzVector lv1, TLorentzVector lv2) {
     TLorentzVector lvPlus = lv1 + lv2;
     TLorentzVector lvMinus = lv1 - lv2;
@@ -50,6 +56,58 @@ double calc_Phi( TLorentzVector lv1, TLorentzVector lv2) {
     }
 }
 
+double* histMoments( TH2F* hist , int n) {
+    int nbinsy = hist->GetNbinsY();
+    int nbinsx = hist->GetNbinsX();
+    double phivals[nbinsx];
+    double weights[nbinsx];
+    double *cosnphi_moments = new double[nbinsy];
+    for (int i = 1; i < nbinsy+1; i++) {
+        auto* onedhist = hist->ProjectionX("1dhist", i, i);
+	for (int j = 1; j < nbinsx+1; j++) {
+            phivals[j-1] = onedhist->GetXaxis()->GetBinCenter(j);
+            weights[j-1] = onedhist->GetBinContent(j);
+        }
+        cosnphi_moments[i-1] = 0;
+        for (int k = 0; k < nbinsx; k++){
+            if ( onedhist->GetEntries() > 0) {
+                cosnphi_moments[i-1] += weights[k] * n * cos(n*phivals[k]) / (onedhist->GetEntries());
+            } else { cosnphi_moments[i-1] += 0; }
+        }
+    }
+    
+    return cosnphi_moments;
+} 
+
+double* moment_error( TH2F* hist, int n ) {
+    int nbinsx = hist->GetNbinsX();
+    int nbinsy = hist->GetNbinsY();
+    double *moment_errors = new double[nbinsy];
+    for (int i = 1; i < nbinsy+1; i++) {
+        auto* onedhist = hist->ProjectionX("1dhist", i, i);
+        auto* momenthist = new TH1F("momenthist", "ncosnphi moments", nbinsx, -1*n, 1*n);
+        for (int j = 1; j < nbinsx+1; j++) {
+            for (int k = 0; k < onedhist->GetBinContent(j); k++) {
+                momenthist->Fill( n * cos( n * (onedhist->GetXaxis()->GetBinCenter(j))));
+            }
+        }
+        moment_errors[i-1] = momenthist->GetMeanError();
+    }
+    return moment_errors;
+}       
+
+double* histYbins( TH2F* hist) {
+    int nbinsy = hist->GetNbinsY();
+    double *ybinvals = new double[nbinsy];
+    for (int i = 1; i < nbinsy+1; i++) {
+        ybinvals[i-1] = hist->GetYaxis()->GetBinCenter(i);
+    }
+    return ybinvals;
+}
+
+
+
+
 void bettereeAnalysis() {
    // Create a histogram for the values we read.
    TH1F("h1", "ntuple", 100, -4, 4);
@@ -57,16 +115,26 @@ void bettereeAnalysis() {
    //will instantiate desired histograms below, with numbers describing plots in more detail
    //not including the event variables here, they are used in eventvariables.C
 
-   auto * mPt = new TH1F("mPt", "Parent Transverse Momentum (Gev/c)", 500, 0, 3);
-   auto * mPhi = new TH1F("mPhi", "#Delta#phi", 300, -5, 5);
+   auto * mPt = new TH1F("mPt, PID, M_{ee} + TOF Cuts", "Parent Transverse Momentum (Gev/c)", 500, 0, 1);
+   auto * mPt2 = new TH1F("mPt^{2}, PID, M_{ee} + TOF Cuts", "Parent Transverse Momentum Squared (Gev/c)^{2}", 500, 0, 0.2);
+   auto * mPhi = new TH1F("mPhi", "#Delta#phi, PID + TOF cuts, Pt < 0.1", 300, -5, 5);
+   auto * mcosfourphi = new TH1F("mcos4#phi, PID + TOF cuts", "cos(4#phi)", 300, -5, 5);
+   auto * mcosthreephi = new TH1F("mcos3#phi, PID + TOF cuts", "cos(3#phi)", 300, -5, 5);
+   auto * mcostwophi = new TH1F("mcos2#phi, PID + TOF cuts", "cos(2#phi)", 300, -5, 5);
+   auto * mcosphi = new TH1F("mcos#phi, PID + TOF cuts", "cos(#phi)", 300, -5, 5);
+
    auto * mEta = new TH1F("mEta", "Parent Pseudorapidity", 500, -6, 6);
    auto * mdTof = new TH1F("#DeltaTOF Hist", "#DeltaTOF", 1000, -15, 15);
    auto * mdTofexp = new TH1F("#DeltaTOFExp Hist", "#DeltaTOFexp", 1000, -15, 15);
    auto * mddTof = new TH1F("#Delta#DeltaTOF Hist", "#Delta#DeltaTOF", 1000, -6, 6);
 
    auto * ddTofFit = new TF1("fit", ddToffit, -2, 2, 7);
+   auto * phifit = new TF1("phifit", phiFit, -3.15,3.15,5);
    ddTofFit->SetParameters(100000.0, 0, 0.2, 50000.0, 0, 0.5, 10);
    ddTofFit->SetParNames("A1", "#lambda1", "#sigma1", "A2","#lambda2", "sigma2", "p0");
+   phifit->SetParNames("a0", "a1", "a2", "a3", "a4");
+   phifit->SetNpx(1000);
+   phifit->SetLineWidth(4);
 
     //set some parameter ranges
    ddTofFit->SetParLimits(2,0.05, 0.3);
@@ -116,9 +184,14 @@ void bettereeAnalysis() {
    auto * nSigmaRigidityCut1 = new TH2F("nsrcut1", "nsrcut1", 1000, -2, 2, 1000, -10, 10);
    auto * nSigmaRigidityCut2 = new TH2F("nsrcut2", "nsrcut2", 1000, -2, 2, 1000, -10, 10);
 
+   auto * cos4phivPt = new TH2F("Cos4#phivPt", "cos4#phi distribution vs P_{T}", 100, -2, 2, 20, 0, 0.15);
+   auto * cos3phivPt = new TH2F("Cos3#phivPt", "cos3#phi distribution vs P_{T}", 100, -2, 2, 20, 0, 0.15);
+   auto * cos2phivPt = new TH2F("Cos2#phivPt", "cos2#phi distribution vs P_{T}", 100, -2, 2, 20, 0, 0.15);
+   auto * cosphivPt = new TH2F("Cos#phivPt", "cos#phi distribution vs P_{T}", 100, -2, 2, 20, 0, 0.15);
+
+   auto * phivPt = new TH2F("phivPt", "#phi vs. parent P_{T}; #phi (rad); Parent P_{T} (GeV); Counts", 100, -3.14, 3.14, 100, 0, 0.25);
 
 
-   
     // Open the file containing the tree.
     TFile *myFile = TFile::Open("/Users/Nick/Desktop/Spring2023/pair_dst_Run12UU.root");
     TTreeReader myReader("PairDst", myFile);
@@ -180,7 +253,8 @@ void bettereeAnalysis() {
        //double phival = (lv-lvn).Phi();
  
 
-       if( mVertexZVal < 100 && mVertexZVal > -100 && mGRefMultVal <= 4 && chargesumval == 0 ) {
+       if( mVertexZVal < 100 && mVertexZVal > -100 && mGRefMultVal <= 4 && chargesumval == 0 && dca1 < 1 && dca2 < 1 && 
+       pair->d1_mMatchFlag !=0 && pair->d2_mMatchFlag!=0) {
             //now for some track cuts
             //For plot 5:
             chiBands2D->Fill(chipipi, chiee); 
@@ -196,10 +270,22 @@ void bettereeAnalysis() {
 
             }
 
-            if( ddTofVal < 0.4 && ddTofVal > -0.4 && chiee < 10 && 3*chiee < chipipi && dca1 < 1 && dca2 < 1) {
+            if( ddTofVal < 0.4 && ddTofVal > -0.4 && chiee < 10 && 3*chiee < chipipi) {
 
-                if(lv.M() < 1 && lv.M() > .45) {
-                    mPhi->Fill(calc_Phi(lv1,lv2));
+                if(lv.M() < 0.8 && lv.M() > .5) {
+                    double phival = calc_Phi(lv1,lv2);
+                    mPt->Fill( mPtVal ); 
+                    mPt2->Fill( pow(mPtVal , 2));                    
+                    phivPt->Fill ( phival, mPtVal);
+                    cos4phivPt->Fill( 2*cos(4*phival), mPtVal);
+                    cos3phivPt->Fill( 2*cos(3*phival), mPtVal);
+                    cos2phivPt->Fill( 2*cos(2*phival), mPtVal);
+                    cosphivPt->Fill( 2*cos(phival), mPtVal);
+
+                    if(mPtVal < 0.1){
+                        mPhi->Fill(phival);
+                        mcosfourphi->Fill(cos(4*phival));
+                    }
                 }
 
                 //Conditions for plots 1, 3 and 4:
@@ -222,7 +308,6 @@ void bettereeAnalysis() {
                     }
                 }
 
-                mPt->Fill( lv.Pt() ); 
 
                 //for Plot 2.
                 mMass->Fill( lv.M() );
@@ -240,6 +325,7 @@ void bettereeAnalysis() {
             mdTofexp->Fill( dTofexpVal );
             mddTof->Fill( ddTofVal );
         }
+        
 
 
      }
@@ -355,7 +441,7 @@ void bettereeAnalysis() {
     chiBands2D->Draw("colz");
     gStyle->SetPalette(1);
     //gPad->SetRightMargin(0.1);
-    gPad->Print("plot_chibands.png");
+    gPad->Print("plots/plot_chibands.png");
 
     makeCanvas2();
     gPad->SetLogz();
@@ -365,7 +451,7 @@ void bettereeAnalysis() {
     chiBands2DCut->Draw("colz");
     gStyle->SetPalette(1);
     //gPad->SetRightMargin(0.1);
-    gPad->Print("plot_chibandscut.png");
+    gPad->Print("plots/plot_chibandscut.png");
     
 
     //rigidity plots
@@ -377,18 +463,18 @@ void bettereeAnalysis() {
     TH2F * sum = (TH2F*)nSigmaRigidity1->Clone();
     sum->Add(nSigmaRigidity2, 1);
     sum->Draw("colz");
-    gPad->Print("plot_rigidity.png");
+    gPad->Print("plots/plot_rigidity.png");
 
 
     makeCanvas2();
     gPad->SetLogz();
     nSigmaRigidityCut1->SetContour(100);
-    nSigmaRigidityCut1->GetXaxis()->SetTitle("q*p");
-    nSigmaRigidityCut1->GetYaxis()->SetTitle("n#sigma_{e}1");
+    nSigmaRigidityCut1->GetXaxis()->SetTitle("q*p (GeV/c)");
+    nSigmaRigidityCut1->GetYaxis()->SetTitle("n#sigma_{e1}");
     TH2F * cutsum = (TH2F*)nSigmaRigidityCut1->Clone();
     cutsum->Add(nSigmaRigidityCut2, 1);
     cutsum->Draw("colz");
-    gPad->Print("plot_rigiditytofcut.png");
+    gPad->Print("plots/plot_rigiditytofcut.png");
 
    
     makeCanvas2();
@@ -397,7 +483,7 @@ void bettereeAnalysis() {
     mdTof->GetXaxis()->SetTitle("#Delta TOF Distrubition (ns)");
     mdTof->GetYaxis()->SetTitle("Counts");
     mdTof->Draw();
-    //gPad->Print( "plot_dTof.png");
+    gPad->Print( "plots/plot_dTof.png");
 
     
     //makeCanvas2();
@@ -413,7 +499,7 @@ void bettereeAnalysis() {
     legend->AddEntry(mdTofexp,"#DeltaTOFexp","l");
     legend->Draw("same");
 
-    gPad->Print( "plot_dTofPlusExpected.png");
+    gPad->Print( "plots/plot_dTofPlusExpected.png");
 
     makeCanvas2();
     mddTof->SetLineColor(kBlack);
@@ -424,17 +510,100 @@ void bettereeAnalysis() {
 
     mddTof->Fit("fit", "", "", -2,2);
     gStyle->SetOptFit(1111);
-    gPad->Print( "plot_ddTof.png");
+    gPad->Print( "plots/plot_ddTof.png");
 
     makeCanvas2();
     pathLengths->SetLineColor(kBlack);
     pathLengths->Draw();
-    gPad->Print("plot_pathlengths1.png");
+    gPad->Print("plots/plot_pathlengths1.png");
 
     makeCanvas2();
     mPhi->SetLineColor(kBlack);
+    mPhi->Fit("phifit", "", "", -3.15,3.15);
+    gStyle->SetOptFit(1111);
+    mPhi->GetXaxis()->SetTitle("#phi");
+    mPhi->GetYaxis()->SetTitle("Counts");
     mPhi->Draw();
-    gPad->Print("plot_phi.png");
+    gPad->Print("plots/plot_phi.png");
+
+    makeCanvas2();
+    mcosfourphi->SetLineColor(kBlack);
+    mcosfourphi->GetXaxis()->SetTitle("cos(4#phi)");
+    mcosfourphi->GetYaxis()->SetTitle("Counts");
+    mcosfourphi->Draw();
+    gPad->Print("plots/plot_cos(4phi).png");
+
+    makeCanvas2();
+    mPt2->SetLineColor(kBlack);
+    mPt2->GetXaxis()->SetTitle("Pt^{2} (GeV/c)^{2}");
+    mPt2->GetYaxis()->SetTitle("Counts");
+    gPad->SetLogy();
+    mPt2->Draw();
+    gPad->Print("plots/plot_mPt2.png");
+
+    makeCanvas2();
+    mPt->SetLineColor(kRed);
+    mPt->GetXaxis()->SetTitle("P_{T} (GeV/c)");
+    mPt->GetYaxis()->SetTitle("Counts");
+    mPt->Draw();
+    gPad->Print("plots/plot_mPt.png");
+
+    makeCanvas2();
+    cos4phivPt->GetXaxis()->SetTitle("cos(4#phi)");
+    cos4phivPt->GetYaxis()->SetTitle("P_{T} (GeV/c)");
+    cos4phivPt->Draw("colz");
+    gPad->Print( "plots/plot_cos4phivPt.png" );       
+
+    makeCanvas2();
+    phivPt->Draw("colz");
+    phivPt->GetXaxis()->SetTitle("#phi");
+    phivPt->GetYaxis()->SetTitle("P_{T}");
+    gPad->Print("plots/plot_phivPt.png");
+
+    auto *m2Ptcos4phimoments = cos4phivPt->ProfileY("m2Ptcos4phimoments", 1, -1);
+    auto *m2Ptcos3phimoments = cos3phivPt->ProfileY("m2Ptcos3phimoments", 1, -1);
+    auto *m2Ptcos2phimoments = cos2phivPt->ProfileY("m2Ptcos2phimoments", 1, -1);
+    auto *m2Ptcosphimoments = cosphivPt->ProfileY("m2Ptcosphimoments", 1, -1);
+
+
+    makeCanvas2();
+    m2Ptcos4phimoments->SetTitle("scaled cos(4#phi) moments vs. P_{T}; P_{T} (GeV); 2<cos(4#phi)>");
+    m2Ptcos4phimoments->GetXaxis()->SetTitle("P_{T} (GeV/c)");
+    m2Ptcos4phimoments->GetYaxis()->SetTitle("cos(4#phi) moments scaled");
+    m2Ptcos4phimoments->SetLineColor(kBlack);
+    m2Ptcos4phimoments->Draw();
+    gPad->Print( "plots/plot_m2Ptcos4phimoments.png");
+
+
+    makeCanvas2();
+    m2Ptcos3phimoments->SetTitle("scaled cos(3#phi) moments vs. P_{T}; P_{T} (GeV); 2<cos(3#phi)>");
+    m2Ptcos3phimoments->GetXaxis()->SetTitle("P_{T} (GeV/c)");
+    m2Ptcos3phimoments->GetYaxis()->SetTitle("cos(3#phi) moments scaled");
+    m2Ptcos3phimoments->SetLineColor(kBlack);
+    m2Ptcos3phimoments->Draw();
+    gPad->Print( "plots/plot_m2Ptcos3phimoments.png");
+
+
+    makeCanvas2();
+    m2Ptcos2phimoments->SetTitle("scaled cos(2#phi) moments vs. P_{T}; P_{T} (GeV); 2<cos(2#phi)>");
+    m2Ptcos2phimoments->GetXaxis()->SetTitle("P_{T} (GeV/c)");
+    m2Ptcos2phimoments->GetYaxis()->SetTitle("cos(2#phi) moments scaled");
+    m2Ptcos2phimoments->SetLineColor(kBlack);
+    m2Ptcos2phimoments->Draw();
+    gPad->Print( "plots/plot_m2Ptcos2phimoments.png");
+
+    makeCanvas2();
+    m2Ptcosphimoments->SetTitle("scaled cos(#phi) moments vs. P_{T}; P_{T} (GeV); 2<cos(#phi)>");
+    m2Ptcosphimoments->GetXaxis()->SetTitle("P_{T} (GeV/c)");
+    m2Ptcosphimoments->GetYaxis()->SetTitle("cos(#phi) moments scaled");
+    m2Ptcosphimoments->SetLineColor(kBlack);
+    m2Ptcosphimoments->Draw();
+    gPad->Print( "plots/plot_m2Ptcosphimoments.png");
+
+
+
+
+
 
 
     
