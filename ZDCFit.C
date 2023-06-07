@@ -67,6 +67,7 @@ void ZDCFit() {
     auto * mZDCWest = new TH1F("mZDCWest, ee Events (PID + TOF + Mass Cut)", "ZDCWest", 400, 0, 1200);
 
     auto * ZDCsSquared = new TH1F("ZDC's Squared", "ZDC's Squared", 500, 0, 2000);
+    auto * ZDCmagvPt2 = new TH2F("ZDC Magnitude Vs. P_{T}^{2}", "ZDC Magnitude Vs. P_{T}^{2}", 20, 0, 2000, 50, 0, .2);
 
     auto * mZDCEast1n1n = new TH1F("mZDCEast Separated, ee Events", "ZDCEast Separated", 1200, 0, 1200);
     auto * mZDCWest1n1n = new TH1F("mZDCWest Separated, ee Events", "ZDCWest Separated", 1200, 0, 1200);
@@ -77,10 +78,10 @@ void ZDCFit() {
     auto * mZDCEast3n3nPlus = new TH1F("mZDCEast3n3nPlus", "ZDCEast3n3nPlus", 1200, 0, 1200);
     auto * mZDCWest3n3nPlus = new TH1F("mZDCWest3n3nPlus", "ZDCWest3n3nPlus", 1200, 0, 1200);
 
-    auto * mPt1n1nUnlikeSign = new TH1F("Pair Transverse Momentum, ee Events", "Pair Transverse Momentum", 100, 0, .15);
-    auto * mPt2n2nUnlikeSign = new TH1F("Pair Transverse Momentum, ee Events", "Pair Transverse Momentum", 100, 0, .15);
+    auto * mPt1n1nUnlikeSign = new TH1F("Pair Transverse Momentum, ee Events", "Pair Transverse Momentum", 50, 0, .15);
+    auto * mPt2n2nUnlikeSign = new TH1F("Pair Transverse Momentum, ee Events", "Pair Transverse Momentum", 50, 0, .15);
     auto * mPt3n3nPlusLikeSign = new TH1F("Pair Transverse Momentum, ee Events", "Pair Transverse Momentum", 100, 0, .15);
-    auto * mPt3n3nPlusUnlikeSign = new TH1F("Pair Transverse Momentum, ee Events", "Pair Transverse Momentum", 100, 0, .15);
+    auto * mPt3n3nPlusUnlikeSign = new TH1F("Pair Transverse Momentum, ee Events", "Pair Transverse Momentum", 50, 0, .15);
 
     auto * mPt = new TH1F("mPt, PID, M_{ee} + TOF Cuts", "Parent Transverse Momentum (Gev/c)", 500, 0, 1);
     auto * mPt2 = new TH1F("mPt^{2}, PID, M_{ee} + TOF Cuts", "Parent Transverse Momentum Squared (Gev/c)^{2}", 500, 0, 0.2);
@@ -95,6 +96,10 @@ void ZDCFit() {
 
     auto * numNeutronsWest = new TH1F("Continuous Number of Neutrons West", "Neutrons West", 100, 0, 5);
     auto * numNeutronsvPtWest = new TH2F("Neutrons West Vs. P_{T}", "Neutrons West Vs P_{T}", 500, 0, .15, 20, 0,5);
+    
+    auto * ZDCEastvPt2 = new TH2F("ZDCEast Vs P_{T}^2", "ZDCEast Vs P_{T}^2", 12, 0, 1200, 100, 0, .2);
+    auto * ZDCWestvPt2 = new TH2F("ZDCWest Vs P_{T}^2", "ZDCWest Vs P_{T}^2", 12, 0, 1200, 100, 0, .2);
+
 
 
 
@@ -215,6 +220,10 @@ void ZDCFit() {
                         numNeutronsEast->Fill(numNeutronseast);
                         numNeutronsvPtEast->Fill(mPtVal, numNeutronseast);
                         numNeutronsvPt2East->Fill(mPtVal*mPtVal, numNeutronseast);
+
+                        ZDCEastvPt2->Fill(mZDCEastVal, mPtVal*mPtVal);
+                        ZDCWestvPt2->Fill(mZDCWestVal, mPtVal*mPtVal);
+                        ZDCmagvPt2->Fill(sqrt(mZDCEastVal* mZDCEastVal + mZDCWestVal*mZDCWestVal), mPtVal*mPtVal);
 
                     }
                 }
@@ -505,7 +514,7 @@ legend3->AddEntry(mPt2n2nUnlikeSign,"Pt 2n2n Peak Unlike Sign","l");
 //legend3->AddEntry(mPt3n3nPlusLikeSign, "Pt 3n3nPlus Peak Like Sign", "l");
 legend3->AddEntry(mPt3n3nPlusUnlikeSign, "Pt 3n3nPlus Peak Unlike Sign", "l");
 //legend3->AddEntry(diff, "Pt 3n3nPlus Peak unlike-like", "l");
-
+legend3->SetTextSize(.02);
 legend3->Draw("same");
 //gPad->SetLogy();
 gPad->Print( "plots/PtXnXnSeparatedVisualCutsbySignBWNormalized.png" );
@@ -558,9 +567,9 @@ auto *numNeutronsWestvPtProjection = numNeutronsvPtWest->ProfileY("numNeutronsWe
 
 
 makeCanvas3();
-numNeutronsEastvPt2Projection->SetTitle("P_{T}^{2} Vs. Weighted East Neutron Mult");
+numNeutronsEastvPt2Projection->SetTitle("<P_{T}^{2}> Vs. Weighted East Neutron Mult");
 numNeutronsEastvPt2Projection->GetXaxis()->SetTitle("Neutron Multiplicity East");
-numNeutronsEastvPt2Projection->GetYaxis()->SetTitle("P_{T}^{2} (GeV/c)^{2}");
+numNeutronsEastvPt2Projection->GetYaxis()->SetTitle("<P_{T}^{2}> (GeV/c)^{2}");
 numNeutronsEastvPt2Projection->SetLineColor(kBlack);
 numNeutronsEastvPt2Projection->Draw();
 gPad->Print( "plots/neutronmulteastvPt2.png");
@@ -573,32 +582,71 @@ int nBinsy = rmsPtNeutronMultEast->GetNbinsY();
 
 cout << "nbinsx " << nBinsx;
 cout << "nbinsy " << nBinsy << " ";
-double x[20], y[20];
+double x[20], y[20], ey[20], ex[20];
 
 for(int binx = 1; binx <= nBinsx ;binx++){
-    cout << "bin content: " << numNeutronsEastvPt2Projection->GetBinContent(binx);
+    cout << " bin content: " << numNeutronsEastvPt2Projection->GetBinContent(binx);
     double rmsVal = sqrt(numNeutronsEastvPt2Projection->GetBinContent(binx));
-    cout << "rms value: " << rmsVal;
-    rmsPtNeutronMultEast->SetBinContent(binx, rmsVal);
-    cout << "binx " << binx;
-    //rmsPtNeutronMultEast->SetBinError(binx, 0.5*(numNeutronsEastvPt2Projection->GetBinError(binx)/(numNeutronsEastvPt2Projection->GetBinContent(binx))));
+    cout << " rms value: " << rmsVal;
+    //double bcx = ((TAxis*)rmsPtNeutronMultEast->GetXaxis())->GetBinCenter(binx);
+
+    rmsPtNeutronMultEast->SetBinContent(binx,rmsVal);
+    cout << " binx: " << binx;
+    rmsPtNeutronMultEast->SetBinError(binx, 0.5*(numNeutronsEastvPt2Projection->GetBinError(binx)/(numNeutronsEastvPt2Projection->GetBinContent(binx))));
     cout << " final value " << rmsPtNeutronMultEast->GetBinContent(binx);
-    x[binx] = binx;
+    /*x[binx] = (binx*1.0)/4;
     y[binx] = rmsVal;
-    //}
+    if(binx > 1){
+        ey[binx] = 0.5*(numNeutronsEastvPt2Projection->GetBinError(binx)/(numNeutronsEastvPt2Projection->GetBinContent(binx))) * rmsPtNeutronMultEast->GetBinContent(binx);
+    }
+    else{
+        ey[binx] = 0.000001;
+    }
+    //cout << "bin error: " << numNeutronsEastvPt2Projection->GetBinError(binx);
+    //cout << "projected error: " << 0.5*(numNeutronsEastvPt2Projection->GetBinError(binx)/(numNeutronsEastvPt2Projection->GetBinContent(binx))) * rmsPtNeutronMultEast->GetBinContent(binx);
+    ex[binx] = 0.125;
+    //}*/
 
 }
 
+/*TGraph * rmsPtZDC = new TGraphErrors("Pt rms", "<P_{T}^2> by ZDC East", 100, 0, 1200, 12, 0, 0.1);
+int xbins = ZDCEastvPt2->GetNbinsX();
+int ybins = ZDCEastvPt2->GetNbinsY();
+double x[20], y[20], ex[20],ey[20];
+for(int iy = 1; iy <= ybins; iy++){
+    double avg = 0;
+    double bcy = ((TAxis*)ZDCEastvPt2->GetYaxis())->GetBinCenter(iy);
+    for(int ix = 1; ix <= xbins; ix++ ){
+        double bcx = ((TAxis*)ZDCEastvPt2->GetXaxis())->GetBinCenter(ix);
+        avg+=bcy/(1.0*xbins);
+    }
+    //rmsPtZDC->Fill(sqrt(avg), .01);
+    cout << sqrt(avg);
+}
+
 makeCanvas3();
-auto * rms = new TGraph(20,x,y);
-rms->SetTitle("RMS ;bin; Pt rms");
+//rmsPtZDC->SetLineColor(kBlack);
+//rmsPtZDC->SetTitle("RMS of P_{T} (GeV/c); ZDC East; <P_{T}^{2}> (GeV/c)");
+//rmsPtZDC->Draw();*/
+
+
+
+/*makeCanvas3();
+auto * rms = new TGraphErrors(20, x, y, ex, ey);
+rms->GetYaxis()->SetRangeUser(0.03, 0.1);
+
+rms->SetTitle("RMS of P_{T} (GeV/c); Neutron Mult East; P_{T} RMS (GeV/c)");
 rms->Draw("AC*");
+gPad->Print("plots/plotneutronmultbyPtRms(TGraphversion).png");*/
 
 makeCanvas3();
 rmsPtNeutronMultEast->SetLineColor(kBlack);
 rmsPtNeutronMultEast->SetTitle("RMS of P_{T} by Neutron Multiplicity");
 rmsPtNeutronMultEast->GetXaxis()->SetTitle("Neutron Multiplicity East");
 rmsPtNeutronMultEast->GetYaxis()->SetTitle("#sqrt(<P_{T}^{2}>)");
+//rmsPtNeutronMultEast->SetEntries(1);
+rmsPtNeutronMultEast->SetEntries(nBinsx);
+
 rmsPtNeutronMultEast->Draw();
 
 
@@ -618,6 +666,34 @@ numNeutronsEastvPtProjection->SetLineColor(kBlack);
 numNeutronsEastvPtProjection->Draw();
 gPad->Print( "plots/neutronmulteastvPt.png");
 
+auto *ZDCEastvPt2Profile = ZDCEastvPt2->ProfileX("ZDCEastvPt2Profile", 1, -1);
+auto *ZDCWestvPt2Profile = ZDCWestvPt2->ProfileX("ZDCWestvPt2Profile", 1, -1);
+
+makeCanvas3();
+ZDCEastvPt2Profile->SetTitle("<P_{T}^{2}> Vs. ZDC East");
+ZDCEastvPt2Profile->GetXaxis()->SetTitle("ADC ZDC East");
+ZDCEastvPt2Profile->GetYaxis()->SetTitle("<P_{T}^{2}> (GeV/c)^{2}");
+ZDCEastvPt2Profile->SetLineColor(kBlack);
+ZDCEastvPt2Profile->Draw();
+gPad->Print( "plots/ZDCeastvPt2profile.png");
+
+makeCanvas3();
+ZDCWestvPt2Profile->SetTitle("<P_{T}^{2}> Vs. ZDC West");
+ZDCWestvPt2Profile->GetXaxis()->SetTitle("ADC ZDC West");
+ZDCWestvPt2Profile->GetYaxis()->SetTitle("<P_{T}^{2}> (GeV/c)^{2}");
+ZDCWestvPt2Profile->SetLineColor(kBlack);
+ZDCWestvPt2Profile->Draw();
+gPad->Print( "plots/ZDCWestvPt2profile.png");
+
+auto *ZDCmagvPt2Profile = ZDCmagvPt2->ProfileX("ZDCmagvPt2Profile", 1, -1);
+
+makeCanvas3();
+ZDCmagvPt2Profile->SetTitle("<P_{T}^{2}> Vs. ZDC Magnitude");
+ZDCmagvPt2Profile->GetXaxis()->SetTitle("#sqrt{ZDCEast^{2}+ZDCWest^{2}}");
+ZDCmagvPt2Profile->GetYaxis()->SetTitle("<P_{T}^{2}> (GeV/c)^{2}");
+ZDCmagvPt2Profile->SetLineColor(kBlack);
+ZDCmagvPt2Profile->Draw();
+gPad->Print( "plots/ZDCmagvPt2profile.png");
 
 
 
