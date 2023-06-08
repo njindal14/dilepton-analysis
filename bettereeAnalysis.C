@@ -121,19 +121,26 @@ void bettereeAnalysis() {
    //will instantiate desired histograms below, with numbers describing plots in more detail
    //not including the event variables here, they are used in eventvariables.C
 
-   auto * mPt = new TH1F("mPt, PID, M_{ee} + TOF Cuts", "Parent Transverse Momentum (GeV/c)", 500, 0, 1);
-   auto * mPtAu = new TH1F("mPtAu, PID, M_{ee} + TOF Cuts Au", "Parent Transverse Momentum (GeV/c) Au", 500, 0, 1);
+   auto * mPt = new TH1F("mPt, PID, M_{ee} + TOF Cuts", "Parent Transverse Momentum (GeV/c)", 40, 0, .2);
+   auto * mPtAu = new TH1F("mPtAu, PID, M_{ee} + TOF Cuts Au", "Parent Transverse Momentum (GeV/c) Au", 40, 0, .2);
 
-   auto * mPt2 = new TH1F("mPt^{2}, PID, M_{ee} + TOF Cuts", "Parent Transverse Momentum Squared (Gev/c)^{2}", 500, 0, 0.2);
+   auto * mRapidity = new TH1F("mRapidity, PID + TOF + Pt < 150 MeV + 0.5 < M < 0.8 GeV", "mRapidity, PID + TOF + Pt < 150 MeV + 0.5 < M < 0.8 GeV", 20, -1, 1 );
+   auto * mRapidityAu = new TH1F("mRapidity Au, PID + TOF + Pt < 150 MeV + 0.5 < M < 0.8 GeV", "mRapidity, PID + TOF + Pt < 150 MeV + 0.5 < M < 0.8 GeV Au", 20, -1, 1 );
+
+
+   auto * mPt2 = new TH1F("mPt^{2}, PID, M_{ee} + TOF Cuts, 0.5 < M < 0.8 GeV/c^{2}", "Parent Transverse Momentum Squared (Gev/c)^{2}", 20, 0, 0.0225);
+   auto * mPt2Au = new TH1F("mPt^{2}, PID, M_{ee} + TOF Cuts Au, 0.5 < M < 0.8 GeV/c^{2}", "Parent Transverse Momentum Squared (Gev/c)^{2} Au", 20, 0, 0.0225);
+
    auto * mPhi = new TH1F("mPhi", "#Delta#phi, PID + TOF cuts, Pt < 0.1", 200, -5, 5);
    auto * mcosfourphi = new TH1F("mcos4#phi, PID + TOF cuts", "cos(4#phi)", 300, -5, 5);
    auto * mcosthreephi = new TH1F("mcos3#phi, PID + TOF cuts", "cos(3#phi)", 300, -5, 5);
    auto * mcostwophi = new TH1F("mcos2#phi, PID + TOF cuts", "cos(2#phi)", 300, -5, 5);
    auto * mcosphi = new TH1F("mcos#phi, PID + TOF cuts", "cos(#phi)", 300, -5, 5);
-   auto * chieeFit = new TF1("chieefit", "[0]", 10, 30);
+   auto * chieeFit = new TF1("chieefit", "[0] + x*[1]", 0, 30);
    chieeFit->SetParameter(0,40);
 
-   auto * PMass = new TH1F("Parent Mass PID + TOF cuts", "Parent Mass (GeV/c^{2})", 500, 0, 4);
+   auto * PMass = new TH1F("Parent Mass PID + TOF cuts, P_{T} < 0.15 GeV/c", "Parent Mass (GeV/c^{2})", 40, 0, 3);
+   auto * PMassAu = new TH1F("Parent Mass PID + TOF cuts Au, P_{T} < 0.15 GeV/c", "Parent Mass (GeV/c^{2})", 40, 0, 3);
 
    auto * mEta = new TH1F("mEta", "Parent Pseudorapidity", 500, -6, 6);
    auto * mdTof = new TH1F("#DeltaTOF Hist", "#DeltaTOF", 1000, -15, 15);
@@ -294,12 +301,19 @@ void bettereeAnalysis() {
        if( mVertexZVal < 100 && mVertexZVal > -100 && mGRefMultVal <= 4 && chargesumval == 0 && dca1 < 1 && dca2 < 1 && 
        pairAu->d1_mMatchFlag !=0 && pairAu->d2_mMatchFlag!=0) {
             //now for some track cuts
-            if( ddTofVal < 0.5 && ddTofVal > -0.5 && chiee < 10 && 3*chiee < chipipi) {
+            if( ddTofVal < 0.4 && ddTofVal > -0.4 && chiee < 10 && 3*chiee < chipipi) {
+                if(mPtVal < 0.15){
+                    PMassAu->Fill(lv.M());
+                }
 
 
                 if(lv.M() < 0.8 && lv.M() > .5) {
                     //double phival = calc_Phi(lv1,lv2);
                     mPtAu->Fill( mPtVal ); 
+                    mPt2Au->Fill( mPtVal * mPtVal);
+                    if(mPtVal < .15){
+                        mRapidity->Fill(rapidity);
+                    }
                 }
             }
 
@@ -441,9 +455,11 @@ void bettereeAnalysis() {
                 
             }
 
-            if( ddTofVal < 0.5 && ddTofVal > -0.5 && chiee < 10 && 3*chiee < chipipi) {
+            if( ddTofVal < 0.4 && ddTofVal > -0.4 && chiee < 10 && 3*chiee < chipipi) {
 
-                PMass->Fill(lv.M());
+                if(mPtVal < 0.15){
+                    PMass->Fill(lv.M());
+                }
 
                 if(lv.M() < 0.8 && lv.M() > .5) {
                     double phival = calc_Phi(lv1,lv2);
@@ -469,6 +485,9 @@ void bettereeAnalysis() {
                     if(mPtVal < 0.1){
                         mPhi->Fill(phival);
                         mcosfourphi->Fill(cos(4*phival));
+                    }
+                    if(mPtVal < 0.15){
+                        mRapidityAu->Fill(rapidity);
                     }
                 }
 
@@ -717,20 +736,6 @@ void bettereeAnalysis() {
     mcosfourphi->Draw();
     gPad->Print("plots/plot_cos(4phi).png");
 
-    makeCanvas2();
-    mPt2->SetLineColor(kBlack);
-    mPt2->GetXaxis()->SetTitle("Pt^{2} (GeV/c)^{2}");
-    mPt2->GetYaxis()->SetTitle("Counts");
-    gPad->SetLogy();
-    mPt2->Draw();
-    gPad->Print("plots/plot_mPt2.png");
-
-    makeCanvas2();
-    mPt->SetLineColor(kRed);
-    mPt->GetXaxis()->SetTitle("P_{T} (GeV/c)");
-    mPt->GetYaxis()->SetTitle("Counts");
-    mPt->Draw();
-    gPad->Print("plots/plot_mPt.png");
 
     makeCanvas2();
     cos4phivPt->GetXaxis()->SetTitle("cos(4#phi)");
@@ -846,12 +851,6 @@ void bettereeAnalysis() {
     m2Mcosphimoments->Draw();
     gPad->Print( "plots/plot_m2Mcosphimoments.png");
 
-    makeCanvas2();
-    PMass->SetTitle("M_{ee}; M_{ee} (GeV/c^{2}); Counts");
-    PMass->SetLineColor(kBlack);
-    PMass->Draw();
-
-
 
 
     makeCanvas2();
@@ -883,14 +882,15 @@ void bettereeAnalysis() {
     makeCanvas2();
     Xee->SetLineColor(kBlack);
     gPad->SetLogy();
-    gStyle->SetOptFit(1111);
     Xee->GetXaxis()->SetTitle("#chi_{ee}^{2}");
     Xee->GetYaxis()->SetTitle("dN/d(#chi_{ee}^{2})");
     Xee->SetMarkerStyle(20);
     Xee->Draw("PE");
-    //Xee->Fit("expo", "", "", 10.);
     chieeFit->SetLineWidth(4);
-    Xee->Fit("chieefit", "", "", 8, 30);
+    chieeFit->SetLineColor(kBlue);
+    Xee->Fit("chieefit", "", "", 10, 30);
+    Xee->Fit("expo", "R+", "", 0., 12.);
+    gStyle->SetOptFit(1111);
     chieeFit->Draw("same");
     double background0 = chieeFit->GetParameter(0);
     double binsx0 = Xee->GetNbinsX();
@@ -1136,7 +1136,11 @@ void bettereeAnalysis() {
     makeCanvas2();
     mPtAu->SetLineColor(kBlack);
     mPtAu->GetXaxis()->SetTitle("P_{T} (GeV/c)");
-    mPtAu->GetYaxis()->SetTitle("Counts");
+    mPtAu->GetYaxis()->SetTitle("1/P_{T} * dN/d(P_{T})");
+    for(int ix = 1; ix < mPtAu->GetNbinsX(); ix++){
+        mPtAu->SetBinContent(ix, 1/mPtAu->GetBinCenter(ix) * mPtAu->GetBinContent(ix));
+    }
+    //mPtAu->Scale(1/mPtAu);
     mPtAu->Scale(1/mPtAu->GetEntries());
     mPtAu->Draw();
     gPad->Print("plots/plot_mPtAu.png");
@@ -1145,21 +1149,127 @@ void bettereeAnalysis() {
     makeCanvas2();
     mPt->SetLineColor(kRed);
     mPt->GetXaxis()->SetTitle("P_{T} (GeV/c)");
-    mPt->GetYaxis()->SetTitle("Counts");
+    mPt->GetYaxis()->SetTitle("1/P_{T} * dN/d(P_{T})");
+    for(int ix = 1; ix < mPt->GetNbinsX(); ix++){
+        mPt->SetBinContent(ix, 1/mPt->GetBinCenter(ix) * mPt->GetBinContent(ix));
+    }
+    //mPt->Scale(1/mPt);
     mPt->Scale(1/mPt->GetEntries());
     mPt->Draw();
     gPad->Print("plots/plot_mPt.png");
 
     makeCanvas2();
-    TH1F *mPtRatio = (TH1F*)mPtAu->Clone("mPtRatio");
+    TH1F *mPtRatio = (TH1F*)mPt->Clone("mPtRatio");
     mPtRatio->SetLineColor(kBlack);
-    mPtRatio->Divide(mPt);
-    mPtRatio->GetXaxis()->SetTitle("P_{T} Ratio, Au+Au/U+U");
+    mPtRatio->Divide(mPtAu);
+    mPtRatio->GetXaxis()->SetTitle("P_{T} (GeV/c)");
+    mPtRatio->GetYaxis()->SetTitle("P_{T} Ratio, U+U/Au+Au");
     mPtRatio->GetXaxis()->SetRangeUser(0,0.15);
     mPtRatio->GetYaxis()->SetRangeUser(0,2);
     mPtRatio->SetTitle("P_{T} Ratio");
+    mPtRatio->Fit("pol1", "", "", 0.01, 0.1);
     mPtRatio->Draw();
-    gPad->Print("plots/plot_mPtRatio.png");
+    gPad->Print("plots/plot_mPtRatioUAu.png");
+
+    makeCanvas2();
+    PMass->SetLineColor(kBlack);
+    PMassAu->SetLineColor(kRed);
+    PMass->GetXaxis()->SetTitle("Pair Invariant Mass (GeV/c^{2})");
+    PMass->GetYaxis()->SetTitle("Counts");
+    PMass->SetTitle("Pair Invariant Mass (GeV/c^{2})");
+    PMass->Scale(1/PMass->GetEntries());
+    PMassAu->Scale(1/PMassAu->GetEntries());
+    PMass->Draw();
+    PMassAu->Draw("same");
+    auto * legendMass = new TLegend(0.79,0.5,.99,0.65);
+    legendMass->SetHeader("Legend");
+    legendMass->AddEntry(PMass,"Parent Mass U+U","l");
+    legendMass->AddEntry(PMassAu,"Parent Mass Au+Au","l");
+    legendMass->Draw("same");
+    gPad->Print("plots/plot_PMassBoth.png");
+
+
+    makeCanvas2();
+    TH1F *PMassRatio = (TH1F*)PMassAu->Clone("PMassRatio");
+    PMassRatio->SetLineColor(kBlack);
+    PMassRatio->Divide(PMass);
+    PMassRatio->GetXaxis()->SetTitle("Pair Invariant Mass (GeV/c^{2})");
+    PMassRatio->GetYaxis()->SetTitle("Pair Invariant Mass Ratio, Au+Au/U+U");
+    PMassRatio->GetXaxis()->SetRangeUser(0.3,2);
+    PMassRatio->GetYaxis()->SetRangeUser(0,2);
+    PMassRatio->SetTitle("Parent Mass Ratio");
+    PMassRatio->Draw();
+    gPad->Print("plots/plot_PMassRatio.png");   
+
+
+    makeCanvas2();
+    mPt2->SetLineColor(kBlack);
+    mPt2->GetXaxis()->SetTitle("Pt^{2} (GeV/c)^{2} U");
+    mPt2->GetYaxis()->SetTitle("Counts (Normalized)");
+    gPad->SetLogy();
+    mPt2->Scale(1/mPt2->GetEntries());
+    mPt2->Fit("expo", "R+", "", 0.001, .012);
+    gStyle->SetOptFit(1111);
+    mPt2->Draw();
+    gPad->Print("plots/plot_mPt2.png");  
+
+    makeCanvas2();
+    mPt2Au->SetLineColor(kRed);
+    mPt2Au->GetXaxis()->SetTitle("Pt^{2} (GeV/c)^{2} Au");
+    mPt2Au->GetYaxis()->SetTitle("Counts (Normalized)");
+    mPt2Au->Scale(1/mPt2Au->GetEntries());
+    gPad->SetLogy();
+    mPt2Au->Fit("expo", "R+", "", 0.001, .012);
+    gStyle->SetOptFit(1111);
+    mPt2Au->Draw();
+    gPad->Print("plots/plot_mPt2Au.png");  
+
+    makeCanvas2();
+    TH1F *Pt2Ratio = (TH1F*)mPt2Au->Clone("Pt2Ratio");
+    Pt2Ratio->SetLineColor(kBlack);
+    Pt2Ratio->Divide(mPt2);
+    Pt2Ratio->GetXaxis()->SetTitle("P_{T}^{2} (GeV/c^{2})^{2}");
+    Pt2Ratio->GetYaxis()->SetTitle("P_{T}^{2} Ratio, Au+Au/U+U");
+    Pt2Ratio->GetYaxis()->SetRangeUser(0,2);
+    Pt2Ratio->SetTitle("Parent P_{T}^{2} Ratio");
+    Pt2Ratio->Fit("pol1", "", "", 0, 0.012);
+    Pt2Ratio->Draw();
+    //auto * legendPt2 = new TLegend(0.79,0.5,.99,0.65);
+    //legendPt2->SetHeader("Legend");
+    //legendPt2->AddEntry(mPt2,"P_{T}^{2} U+U","l");
+    //legendPt2->AddEntry(mPt2Au,"P_{T}^{2} Au+Au","l");
+    //legendPt2->Draw("same");
+    gPad->Print("plots/plot_Pt2Ratio.png");   
+
+
+    makeCanvas2();
+    mRapidity->SetLineColor(kBlack);
+    mRapidity->Scale(1/mRapidity->GetEntries());
+    mRapidity->Draw();
+
+    mRapidityAu->SetLineColor(kRed);
+    mRapidityAu->Scale(1/mRapidityAu->GetEntries());
+    mRapidityAu->GetXaxis()->SetTitle("Rapidity");
+    mRapidityAu->GetYaxis()->SetTitle("Counts");
+    mRapidityAu->Draw("same");
+    auto * legendY = new TLegend(0.79,0.5,.99,0.65);
+    legendY->AddEntry(mRapidity, "Rapidity U+U", "l");
+    legendY->AddEntry(mRapidityAu,"Rapidity Au+Au", "l");
+    legendY->Draw("same");
+    gPad->Print("plots/plot_rapidityBoth.png");
+
+
+    makeCanvas2();
+    TH1F *YRatio = (TH1F*)mRapidityAu->Clone("YRatio");
+    YRatio->SetLineColor(kBlack);
+    YRatio->Divide(mRapidity);
+    YRatio->GetXaxis()->SetTitle("Rapidity");
+    YRatio->GetYaxis()->SetTitle("Rapidity Ratio, Au+Au/U+U");
+    YRatio->GetYaxis()->SetRangeUser(0,2);
+    YRatio->SetTitle("Rapidity Ratio");
+    //Pt2Ratio->Fit("pol1", "", "", 0, 0.012);
+    YRatio->Draw();
+    gPad->Print("plots/plot_rapidityRatio.png");
 
 
 
