@@ -121,8 +121,8 @@ void bettereeAnalysis() {
    //will instantiate desired histograms below, with numbers describing plots in more detail
    //not including the event variables here, they are used in eventvariables.C
 
-   auto * mPt = new TH1F("mPt, PID, M_{ee} + TOF Cuts", "Parent Transverse Momentum (GeV/c)", 40, 0, .2);
-   auto * mPtAu = new TH1F("mPtAu, PID, M_{ee} + TOF Cuts Au", "Parent Transverse Momentum (GeV/c) Au", 40, 0, .2);
+   auto * mPt = new TH1F("mPt, PID, M_{ee} + TOF Cuts", "Parent Transverse Momentum (GeV/c)", 40, 0.06, .18);
+   auto * mPtAu = new TH1F("mPtAu, PID, M_{ee} + TOF Cuts Au", "Parent Transverse Momentum (GeV/c) Au", 40, 0.06, .18);
 
    auto * mRapidity = new TH1F("mRapidity, PID + TOF + Pt < 150 MeV + 0.5 < M < 0.8 GeV", "mRapidity, PID + TOF + Pt < 150 MeV + 0.5 < M < 0.8 GeV", 20, -1, 1 );
    auto * mRapidityAu = new TH1F("mRapidity Au, PID + TOF + Pt < 150 MeV + 0.5 < M < 0.8 GeV", "mRapidity, PID + TOF + Pt < 150 MeV + 0.5 < M < 0.8 GeV Au", 20, -1, 1 );
@@ -132,11 +132,13 @@ void bettereeAnalysis() {
    auto * mPt2Au = new TH1F("mPt^{2}, PID, M_{ee} + TOF Cuts Au, 0.5 < M < 0.8 GeV/c^{2}", "Parent Transverse Momentum Squared (Gev/c)^{2} Au", 20, 0, 0.0225);
 
    auto * mPhi = new TH1F("mPhi", "#Delta#phi, PID + TOF cuts, Pt < 0.1", 200, -5, 5);
+   auto * mPhiAu = new TH1F("mPhiAu", "#Delta#phi, PID + TOF cuts, Pt < 0.1 Au", 200, -5, 5);
+
    auto * mcosfourphi = new TH1F("mcos4#phi, PID + TOF cuts", "cos(4#phi)", 300, -5, 5);
    auto * mcosthreephi = new TH1F("mcos3#phi, PID + TOF cuts", "cos(3#phi)", 300, -5, 5);
    auto * mcostwophi = new TH1F("mcos2#phi, PID + TOF cuts", "cos(2#phi)", 300, -5, 5);
    auto * mcosphi = new TH1F("mcos#phi, PID + TOF cuts", "cos(#phi)", 300, -5, 5);
-   auto * chieeFit = new TF1("chieefit", "[0] + x*[1]", 0, 30);
+   auto * chieeFit = new TF1("chieefit", "[0]", 0, 30);
    chieeFit->SetParameter(0,40);
 
    auto * PMass = new TH1F("Parent Mass PID + TOF cuts, P_{T} < 0.15 GeV/c", "Parent Mass (GeV/c^{2})", 40, 0, 3);
@@ -162,12 +164,17 @@ void bettereeAnalysis() {
 
    auto * ddTofFit = new TF1("fit", ddToffit, -2, 2, 7);
    auto * phifit = new TF1("phifit", phiFit, -3.15,3.15,5);
+   auto * phifitAu = new TF1("phifitAu", phiFit, -3.15,3.15,5);
+
    auto* chifit = new TF1("chifit", chiFit, 0, 10, 2);
    ddTofFit->SetParameters(100000.0, 0, 0.2, 50000.0, 0, 0.5, 10);
    ddTofFit->SetParNames("A1", "#lambda1", "#sigma1", "A2","#lambda2", "sigma2", "p0");
    phifit->SetParNames("a0", "a1", "a2", "a3", "a4");
    phifit->SetNpx(1000);
    phifit->SetLineWidth(4);
+   phifitAu->SetParNames("a0", "a1", "a2", "a3", "a4");
+   phifitAu->SetNpx(1000);
+   phifitAu->SetLineWidth(4);
    chifit->SetNpx(100);
    chifit->SetLineWidth(4);
 
@@ -179,7 +186,6 @@ void bettereeAnalysis() {
    ddTofFit->SetNpx(1000);
    ddTofFit->SetLineWidth(4);
 
-   auto * pathLengths = new TH1F("path lengths", "path lengths", 10000, 0, 500);
    //auto * mMass = new TH1F("mMass", "Parent Mass (GeV/c^{2})", 500, 0, 4);
 
    /* Plots to be instiated as follows, referencing ee_note document:
@@ -219,10 +225,20 @@ void bettereeAnalysis() {
    auto * nSigmaRigidityCut1 = new TH2F("Rigidity with #Delta#Delta TOF Cut", "Rigidity with #Delta#Delta TOF Cut", 1000, -2, 2, 1000, -10, 10);
    auto * nSigmaRigidityCut2 = new TH2F("Rigidity2 with #Delta#Delta TOF Cut", "Rigidity with #Delta#Delta TOF Cut", 1000, -2, 2, 1000, -10, 10);
 
-   auto * cos4phivPt = new TH2F("Cos4#phivPt", "cos4#phi distribution vs P_{T}", 100, -2, 2, 15, 0, 0.1);
-   auto * cos3phivPt = new TH2F("Cos3#phivPt", "cos3#phi distribution vs P_{T}", 100, -2, 2, 15, 0, 0.1);
-   auto * cos2phivPt = new TH2F("Cos2#phivPt", "cos2#phi distribution vs P_{T}", 100, -2, 2, 15, 0, 0.1);
-   auto * cosphivPt = new TH2F("Cos#phivPt", "cos#phi distribution vs P_{T}", 100, -2, 2, 15, 0, 0.1);
+   auto * cos4phivPt = new TH2F("Cos4#phivPt", "cos4#phi distribution vs P_{T}", 400, -2, 2, 15, 0, 0.3);
+   auto * cos4phivPtHigherZDC = new TH2F("Cos4#phivPtHigherZDC", "cos4#phi distribution vs P_{T} ADC ZDC Cut", 400, -2, 2, 15, 0, 0.3);
+   auto * cos4phivPtLowerZDC = new TH2F("Cos4#phivPtLowerZDC", "cos4#phi distribution vs P_{T} ADC ZDC Cut", 400, -2, 2, 15, 0, 0.3);
+
+   auto * cos3phivPt = new TH2F("Cos3#phivPt", "cos3#phi distribution vs P_{T}", 400, -2, 2, 15, 0, 0.3);
+   auto * cos2phivPt = new TH2F("Cos2#phivPt", "cos2#phi distribution vs P_{T}", 400, -2, 2, 15, 0, 0.3);
+   auto * cosphivPt = new TH2F("Cos#phivPt", "cos#phi distribution vs P_{T}", 400, -2, 2, 15, 0, 0.3);
+
+   auto * cos4phivPtAu = new TH2F("Cos4#phivPtAu", "cos4#phi distribution vs P_{T} Au", 400, -2, 2, 15, 0, 0.3);
+   auto * cos4phivPtHigherZDCAu = new TH2F("Cos4#phivPtHigherZDCAu", "cos4#phi distribution vs P_{T} ADC ZDC Cut Au+Au", 400, -2, 2, 15, 0, 0.3);
+   auto * cos4phivPtLowerZDCAu = new TH2F("Cos4#phivPtLowerZDCAu", "cos4#phi distribution vs P_{T} ADC ZDC Cut AU+Au", 400, -2, 2, 15, 0, 0.3);
+   auto * cos3phivPtAu = new TH2F("Cos3#phivPtAu", "cos3#phi distribution vs P_{T} Au", 400, -2, 2, 15, 0, 0.3);
+   auto * cos2phivPtAu = new TH2F("Cos2#phivPtAu", "cos2#phi distribution vs P_{T} Au", 400, -2, 2, 15, 0, 0.3);
+   auto * cosphivPtAu = new TH2F("Cos#phivPtAu", "cos#phi distribution vs P_{T} Au", 400, -2, 2, 15, 0, 0.3);
 
    auto * cos4phivM = new TH2F("Cos4#phivM", "cos4#phi distribution vs M_{ee}", 100, -2, 2, 15, 0.5, 0.8);
    auto * cos3phivM = new TH2F("Cos3#phivM", "cos3#phi distribution vs M_{ee}", 100, -2, 2, 15, 0.5, 0.8);
@@ -260,6 +276,8 @@ void bettereeAnalysis() {
         double me2 = pow(0.00051,2);
         double dca1 = pairAu->d1_mDCA;
         double dca2 = pairAu->d2_mDCA;
+        UShort_t mZDCEastVal = pairAu->mZDCEast;               // ZDC East
+        UShort_t mZDCWestVal = pairAu->mZDCWest;
         Float_t rapidity = pairAu->mRapidity;
 
         /* 
@@ -285,7 +303,6 @@ void bettereeAnalysis() {
         Float_t Tof1 = pairAu->d1_mTof;     
         Float_t Tof2 = pairAu->d2_mTof;  
         Float_t len1 = pairAu->d1_mLength;
-        //pathLengths->Fill(len1);
         Float_t len2 = pairAu->d2_mLength; 
         Float_t mPtVal = pairAu->mPt;
         Float_t dTofVal = Tof1 - Tof2;
@@ -308,9 +325,24 @@ void bettereeAnalysis() {
 
 
                 if(lv.M() < 0.8 && lv.M() > .5) {
-                    //double phival = calc_Phi(lv1,lv2);
+                    double phival = calc_Phi(lv1,lv2);
                     mPtAu->Fill( mPtVal ); 
                     mPt2Au->Fill( mPtVal * mPtVal);
+                    cos4phivPtAu->Fill( 2*cos(4*phival), mPtVal);
+                    if(mZDCWestVal > 200 && mZDCEastVal > 200){
+                        cos4phivPtHigherZDCAu->Fill(2*cos(4*phival), mPtVal);
+                    }
+                    else if(mZDCWestVal < 200 && mZDCEastVal < 200){
+                        cos4phivPtLowerZDCAu->Fill(2*cos(4*phival), mPtVal);
+                    }
+                    cos3phivPtAu->Fill( 2*cos(3*phival), mPtVal);
+                    cos2phivPtAu->Fill( 2*cos(2*phival), mPtVal);
+                    cosphivPtAu->Fill( 2*cos(phival), mPtVal);\
+
+                    if(mPtVal < 0.1){
+                        mPhiAu->Fill(phival);
+                    }
+
                     if(mPtVal < .15){
                         mRapidity->Fill(rapidity);
                     }
@@ -331,6 +363,8 @@ void bettereeAnalysis() {
         double me2 = pow(0.00051,2);
         double dca1 = pair->d1_mDCA;
         double dca2 = pair->d2_mDCA;
+        UShort_t mZDCEastVal = pair->mZDCEast;               // ZDC East
+        UShort_t mZDCWestVal = pair->mZDCWest;
         Float_t rapidity = pair->mRapidity;
 
         /* 
@@ -356,7 +390,6 @@ void bettereeAnalysis() {
         Float_t Tof1 = pair->d1_mTof;     
         Float_t Tof2 = pair->d2_mTof;  
         Float_t len1 = pair->d1_mLength;
-        pathLengths->Fill(len1);
         Float_t len2 = pair->d2_mLength; 
         Float_t mPtVal = pair->mPt;
         Float_t dTofVal = Tof1 - Tof2;
@@ -386,7 +419,7 @@ void bettereeAnalysis() {
 
 
 
-            if(chipipi > 30){
+            if(chipipi > 30 &&ddTofVal < 0.4 && ddTofVal > -0.4){
                 Xee->Fill(chiee); 
             }
             if(chipipi <= 30 && ddTofVal < 0.4 && ddTofVal > -0.4){
@@ -470,7 +503,12 @@ void bettereeAnalysis() {
                     cos3phivPt->Fill( 2*cos(3*phival), mPtVal);
                     cos2phivPt->Fill( 2*cos(2*phival), mPtVal);
                     cosphivPt->Fill( 2*cos(phival), mPtVal);
-                    
+                    if(mZDCWestVal > 200 && mZDCEastVal > 200){
+                        cos4phivPtHigherZDC->Fill(2*cos(4*phival), mPtVal);
+                    }
+                    else if(mZDCWestVal < 200 && mZDCEastVal < 200){
+                        cos4phivPtLowerZDC->Fill(2*cos(4*phival), mPtVal);
+                    }
                     cos4phivM->Fill( 2*cos(4*phival), parentMass);
                     cos3phivM->Fill( 2*cos(3*phival), parentMass);
                     cos2phivM->Fill( 2*cos(2*phival), parentMass);
@@ -636,7 +674,7 @@ void bettereeAnalysis() {
     */
 
     //Plot 5
-    makeCanvas2();
+    /*makeCanvas2();
     gPad->SetLogz();
     chiBands2D->SetContour(100);
     chiBands2D->GetXaxis()->SetTitle("#chi_{#pi#pi}^{2}");
@@ -677,7 +715,7 @@ void bettereeAnalysis() {
     TH2F * cutsum = (TH2F*)nSigmaRigidityCut1->Clone();
     cutsum->Add(nSigmaRigidityCut2, 1);
     cutsum->Draw("colz");
-    gPad->Print("plots/plot_rigiditytofcut.png");
+    gPad->Print("plots/plot_rigiditytofcut.png"); 
 
    
     makeCanvas2();
@@ -713,12 +751,7 @@ void bettereeAnalysis() {
 
     mddTof->Fit("fit", "", "", -2,2);
     gStyle->SetOptFit(1111);
-    gPad->Print( "plots/plot_ddTof.png");
-
-    makeCanvas2();
-    pathLengths->SetLineColor(kBlack);
-    pathLengths->Draw();
-    gPad->Print("plots/plot_pathlengths1.png");
+    gPad->Print( "plots/plot_ddTof.png"); */
 
     makeCanvas2();
     mPhi->SetLineColor(kBlack);
@@ -728,6 +761,15 @@ void bettereeAnalysis() {
     mPhi->GetYaxis()->SetTitle("Counts");
     mPhi->Draw();
     gPad->Print("plots/plot_phi.png");
+
+    makeCanvas2();
+    mPhiAu->SetLineColor(kBlack);
+    mPhiAu->Fit("phifitAu", "", "", -3.15,3.15);
+    gStyle->SetOptFit(1111);
+    mPhiAu->GetXaxis()->SetTitle("#phi Au");
+    mPhiAu->GetYaxis()->SetTitle("Counts");
+    mPhiAu->Draw();
+    gPad->Print("plots/plot_phiAu.png");
 
     makeCanvas2();
     mcosfourphi->SetLineColor(kBlack);
@@ -749,10 +791,16 @@ void bettereeAnalysis() {
     phivPt->GetYaxis()->SetTitle("P_{T}");
     gPad->Print("plots/plot_phivPt.png");
 
-    auto *m2Ptcos4phimoments = cos4phivPt->ProfileY("m2Ptcos4phimoments", 1, -1);
+    auto *m2Ptcos4phimoments = cos4phivPt->ProfileY("m2Ptcos4phimoments",1, -1);
     auto *m2Ptcos3phimoments = cos3phivPt->ProfileY("m2Ptcos3phimoments", 1, -1);
-    auto *m2Ptcos2phimoments = cos2phivPt->ProfileY("m2Ptcos2phimoments", 1, -1);
-    auto *m2Ptcosphimoments = cosphivPt->ProfileY("m2Ptcosphimoments", 1, -1);
+    auto *m2Ptcos2phimoments = cos2phivPt->ProfileY("m2Ptcos2phimoments",1, -1);
+    auto *m2Ptcosphimoments = cosphivPt->ProfileY("m2Ptcosphimoments",1, -1);
+
+
+    auto *m2Ptcos4phimomentsAu = cos4phivPtAu->ProfileY("m2Ptcos4phimomentsAu", 1, -1);
+    auto *m2Ptcos3phimomentsAu = cos3phivPtAu->ProfileY("m2Ptcos3phimomentsAu",1, -1);
+    auto *m2Ptcos2phimomentsAu = cos2phivPtAu->ProfileY("m2Ptcos2phimomentsAu", 1, -1);
+    auto *m2PtcosphimomentsAu = cosphivPtAu->ProfileY("m2PtcosphimomentsAu",1, -1);
 
     auto *m2Mcos4phimoments = cos4phivM->ProfileY("m2Mcos4phimoments", 1, -1);
     auto *m2Mcos3phimoments = cos3phivM->ProfileY("m2Mcos3phimoments", 1, -1);
@@ -764,56 +812,6 @@ void bettereeAnalysis() {
     auto *m2Ycos2phimoments = cos2phivY->ProfileY("m2Ycos2phimoments", 1, -1);
     auto *m2Ycosphimoments = cosphivY->ProfileY("m2Ycosphimoments", 1, -1);
 
-
-    makeCanvas2();
-    m2Ptcos4phimoments->SetTitle("scaled cos(4#phi) moments vs. P_{T}; P_{T} (GeV); 2<cos(4#phi)>");
-    m2Ptcos4phimoments->GetXaxis()->SetTitle("<P_{T}> (GeV/c)");
-    m2Ptcos4phimoments->GetYaxis()->SetTitle("cos(4#phi) moments scaled");
-    m2Ptcos4phimoments->SetLineColor(kBlack);
-    m2Ptcos4phimoments->Draw();
-    auto *phiFit4 = new TF1("4phifit", "pol0");
-    m2Ptcos4phimoments->Fit("4phifit", "", "", 0., 0.1);
-    gStyle->SetOptFit(1111);
-    phiFit4->Draw("same");
-    gPad->Print( "plots/plot_m2Ptcos4phimoments.png");
-
-
-    makeCanvas2();
-    m2Ptcos3phimoments->SetTitle("scaled cos(3#phi) moments vs. P_{T}; P_{T} (GeV); 2<cos(3#phi)>");
-    m2Ptcos3phimoments->GetXaxis()->SetTitle("<P_{T}> (GeV/c)");
-    m2Ptcos3phimoments->GetYaxis()->SetTitle("cos(3#phi) moments scaled");
-    m2Ptcos3phimoments->SetLineColor(kBlack);
-    m2Ptcos3phimoments->Draw();
-    auto *phiFit3 = new TF1("3phifit", "pol0");
-    m2Ptcos3phimoments->Fit("3phifit", "", "", 0., 0.1);
-    gStyle->SetOptFit(1111);
-    phiFit3->Draw("same");
-    gPad->Print( "plots/plot_m2Ptcos3phimoments.png");
-
-
-    makeCanvas2();
-    m2Ptcos2phimoments->SetTitle("scaled cos(2#phi) moments vs. P_{T}; P_{T} (GeV); 2<cos(2#phi)>");
-    m2Ptcos2phimoments->GetXaxis()->SetTitle("<P_{T}> (GeV/c)");
-    m2Ptcos2phimoments->GetYaxis()->SetTitle("cos(2#phi) moments scaled");
-    m2Ptcos2phimoments->SetLineColor(kBlack);
-    m2Ptcos2phimoments->Draw();
-    auto *phiFit2 = new TF1("2phifit", "pol0");
-    m2Ptcos2phimoments->Fit("2phifit", "", "", 0., 0.1);
-    gStyle->SetOptFit(1111);
-    phiFit2->Draw("same");
-    gPad->Print( "plots/plot_m2Ptcos2phimoments.png");
-
-    makeCanvas2();
-    m2Ptcosphimoments->SetTitle("scaled cos(#phi) moments vs. P_{T}; P_{T} (GeV); 2<cos(#phi)>");
-    m2Ptcosphimoments->GetXaxis()->SetTitle("<P_{T}> (GeV/c)");
-    m2Ptcosphimoments->GetYaxis()->SetTitle("cos(#phi) moments scaled");
-    m2Ptcosphimoments->SetLineColor(kBlack);
-    m2Ptcosphimoments->Draw();
-    auto *phiFit = new TF1("phifit", "pol0");
-    m2Ptcosphimoments->Fit("phifit", "", "", 0., 0.1);
-    gStyle->SetOptFit(1111);
-    phiFit->Draw("same");
-    gPad->Print( "plots/plot_m2Ptcosphimoments.png");
 
 
 
@@ -888,7 +886,7 @@ void bettereeAnalysis() {
     Xee->Draw("PE");
     chieeFit->SetLineWidth(4);
     chieeFit->SetLineColor(kBlue);
-    Xee->Fit("chieefit", "", "", 10, 30);
+    Xee->Fit("chieefit", "", "", 12, 30);
     Xee->Fit("expo", "R+", "", 0., 12.);
     gStyle->SetOptFit(1111);
     chieeFit->Draw("same");
@@ -1143,7 +1141,7 @@ void bettereeAnalysis() {
     //mPtAu->Scale(1/mPtAu);
     mPtAu->Scale(1/mPtAu->GetEntries());
     mPtAu->Draw();
-    gPad->Print("plots/plot_mPtAu.png");
+    gPad->Print("plots/plot_mPtAuHighPtRange.png");
 
 
     makeCanvas2();
@@ -1156,7 +1154,7 @@ void bettereeAnalysis() {
     //mPt->Scale(1/mPt);
     mPt->Scale(1/mPt->GetEntries());
     mPt->Draw();
-    gPad->Print("plots/plot_mPt.png");
+    gPad->Print("plots/plot_mPtHighPtRange.png");
 
     makeCanvas2();
     TH1F *mPtRatio = (TH1F*)mPt->Clone("mPtRatio");
@@ -1169,7 +1167,7 @@ void bettereeAnalysis() {
     mPtRatio->SetTitle("P_{T} Ratio");
     mPtRatio->Fit("pol1", "", "", 0.01, 0.1);
     mPtRatio->Draw();
-    gPad->Print("plots/plot_mPtRatioUAu.png");
+    gPad->Print("plots/plot_mPtRatioUAuHighPtRange.png");
 
     makeCanvas2();
     PMass->SetLineColor(kBlack);
@@ -1208,7 +1206,7 @@ void bettereeAnalysis() {
     mPt2->GetYaxis()->SetTitle("Counts (Normalized)");
     gPad->SetLogy();
     mPt2->Scale(1/mPt2->GetEntries());
-    mPt2->Fit("expo", "R+", "", 0.001, .012);
+    mPt2->Fit("expo", "R+", "", 0.001, .022);
     gStyle->SetOptFit(1111);
     mPt2->Draw();
     gPad->Print("plots/plot_mPt2.png");  
@@ -1219,7 +1217,7 @@ void bettereeAnalysis() {
     mPt2Au->GetYaxis()->SetTitle("Counts (Normalized)");
     mPt2Au->Scale(1/mPt2Au->GetEntries());
     gPad->SetLogy();
-    mPt2Au->Fit("expo", "R+", "", 0.001, .012);
+    mPt2Au->Fit("expo", "R+", "", 0.001, .022);
     gStyle->SetOptFit(1111);
     mPt2Au->Draw();
     gPad->Print("plots/plot_mPt2Au.png");  
@@ -1270,6 +1268,181 @@ void bettereeAnalysis() {
     //Pt2Ratio->Fit("pol1", "", "", 0, 0.012);
     YRatio->Draw();
     gPad->Print("plots/plot_rapidityRatio.png");
+
+
+    makeCanvas2();
+    m2Ptcos4phimomentsAu->SetTitle("scaled cos(4#phi) moments vs. P_{T} Au; P_{T} (GeV) Au; 2<cos(4#phi)>");
+    m2Ptcos4phimomentsAu->GetXaxis()->SetTitle("<P_{T}> (GeV/c) Au");
+    m2Ptcos4phimomentsAu->GetYaxis()->SetTitle("cos(4#phi) moments scaled");
+    m2Ptcos4phimomentsAu->SetLineColor(kRed);
+    m2Ptcos4phimomentsAu->Draw();
+    //auto *phiFit4Au = new TF1("4phifit", "pol0");
+    //m2Ptcos4phimomentsAu->Fit("4phifit", "", "", 0., 0.1);
+    //gStyle->SetOptFit(1111);
+    //phiFit4Au->Draw("same");
+    //gPad->Print( "plots/plot_m2Ptcos4phimomentsAu.png");
+
+    //makeCanvas2();
+    m2Ptcos4phimoments->SetTitle("scaled cos(4#phi) moments vs. P_{T}; P_{T} (GeV); 2<cos(4#phi)>");
+    m2Ptcos4phimoments->GetXaxis()->SetTitle("<P_{T}> (GeV/c)");
+    m2Ptcos4phimoments->GetYaxis()->SetTitle("cos(4#phi) moments scaled");
+    m2Ptcos4phimoments->SetLineColor(kBlack);
+    m2Ptcos4phimoments->Draw("same");
+    auto *phiFit4 = new TF1("4phifit", "pol0");
+    //m2Ptcos4phimoments->Fit("4phifit", "", "", 0., 0.1);
+    //gStyle->SetOptFit(1111);
+    //phiFit4->Draw("same");
+    auto * legendcos4phi = new TLegend(0.79,0.5,.99,0.65);
+    legendcos4phi->AddEntry(m2Ptcos4phimomentsAu, "cos(4#phi) moments Au+Au", "l");
+    legendcos4phi->AddEntry(m2Ptcos4phimoments,"cos(4#phi) moments U+U", "l");
+    legendcos4phi->Draw("same");
+    gPad->Print( "plots/plot_m2Ptcos4phimomentsBothWide.png");
+
+
+
+    makeCanvas2();
+    m2Ptcos3phimomentsAu->SetTitle("scaled cos(3#phi) moments vs. P_{T} Au; P_{T} (GeV) Au; 2<cos(3#phi)>");
+    m2Ptcos3phimomentsAu->GetXaxis()->SetTitle("<P_{T}> (GeV/c) Au");
+    m2Ptcos3phimomentsAu->GetYaxis()->SetTitle("cos(3#phi) moments scaled");
+    m2Ptcos3phimomentsAu->SetLineColor(kBlack);
+    m2Ptcos3phimomentsAu->Draw();
+    auto *phiFit3Au = new TF1("3phifit", "pol0");
+    m2Ptcos3phimomentsAu->Fit("3phifit", "", "", 0., 0.1);
+    gStyle->SetOptFit(1111);
+    phiFit3Au->Draw("same");
+    gPad->Print( "plots/plot_m2Ptcos3phimomentsAuWide.png");
+
+
+    makeCanvas2();
+    m2Ptcos2phimomentsAu->SetTitle("scaled cos(2#phi) moments vs. P_{T} Au; P_{T} (GeV) Au; 2<cos(2#phi)>");
+    m2Ptcos2phimomentsAu->GetXaxis()->SetTitle("<P_{T}> (GeV/c)");
+    m2Ptcos2phimomentsAu->GetYaxis()->SetTitle("cos(2#phi) moments scaled");
+    m2Ptcos2phimomentsAu->SetLineColor(kRed);
+    m2Ptcos2phimomentsAu->Draw();
+    //auto *phiFit2Au = new TF1("2phifit", "pol0");
+    //m2Ptcos2phimomentsAu->Fit("2phifit", "", "", 0., 0.1);
+    //gStyle->SetOptFit(1111);
+    //phiFit2Au->Draw("same");
+    //gPad->Print( "plots/plot_m2Ptcos2phimomentsAu.png");
+     //makeCanvas2();
+    m2Ptcos2phimoments->SetTitle("scaled cos(2#phi) moments vs. P_{T}; P_{T} (GeV); 2<cos(2#phi)>");
+    //m2Ptcos2phimoments->GetXaxis()->SetTitle("<P_{T}> (GeV/c)");
+    //m2Ptcos2phimoments->GetYaxis()->SetTitle("cos(2#phi) moments scaled");
+    m2Ptcos2phimoments->SetLineColor(kBlack);
+    m2Ptcos2phimoments->Draw("same");
+    //auto *phiFit2 = new TF1("2phifit", "pol0");
+    //m2Ptcos2phimoments->Fit("2phifit", "", "", 0., 0.1);
+    //gStyle->SetOptFit(1111);
+    //phiFit2->Draw("same");
+    auto * legendcos2phi = new TLegend(0.79,0.5,.99,0.65);
+    legendcos2phi->AddEntry(m2Ptcos2phimomentsAu, "cos(2#phi) moments Au+Au", "l");
+    legendcos2phi->AddEntry(m2Ptcos2phimoments,"cos(2#phi) moments U+U", "l");
+    legendcos2phi->Draw("same");
+    gPad->Print( "plots/plot_m2Ptcos2phimomentsBothWide.png");
+
+
+
+    makeCanvas2();
+    m2PtcosphimomentsAu->SetTitle("scaled cos(#phi) moments vs. P_{T} Au; P_{T} (GeV) Au; 2<cos(#phi)>");
+    m2PtcosphimomentsAu->GetXaxis()->SetTitle("<P_{T}> (GeV/c) Au");
+    m2PtcosphimomentsAu->GetYaxis()->SetTitle("cos(#phi) moments scaled");
+    m2PtcosphimomentsAu->SetLineColor(kBlack);
+    m2PtcosphimomentsAu->Draw();
+    auto *phiFitAu = new TF1("phifit", "pol0");
+    m2PtcosphimomentsAu->Fit("phifit", "", "", 0., 0.1);
+    gStyle->SetOptFit(1111);
+    phiFitAu->Draw("same");
+    gPad->Print( "plots/plot_m2PtcosphimomentsAuWide.png");
+
+
+    makeCanvas2();
+    TH2D *cos2phiPtmomentsRatio = (TH2D*)m2Ptcos2phimomentsAu->Clone("cos2phiPtmomentsRatio");
+    cos2phiPtmomentsRatio->SetLineColor(kBlack);
+    cos2phiPtmomentsRatio->Divide(m2Ptcos2phimoments);
+    cos2phiPtmomentsRatio->GetXaxis()->SetTitle("<P_{T}> GeV/c");
+    cos2phiPtmomentsRatio->GetYaxis()->SetTitle("Moment Ratio, Au+Au/U+U");
+    cos2phiPtmomentsRatio->GetYaxis()->SetRangeUser(-3,3);
+    cos2phiPtmomentsRatio->SetTitle("cos(2#phi) Moments Ratio");
+    cos2phiPtmomentsRatio->Draw();
+    gPad->Print("plots/plot_cos2phiPtmomentsRatioWide.png");
+
+    makeCanvas2();
+    TH2D *cos4phiPtmomentsRatio = (TH2D*)m2Ptcos4phimomentsAu->Clone("cos4phiPtmomentsRatio");
+    cos4phiPtmomentsRatio->SetLineColor(kBlack);
+    cos4phiPtmomentsRatio->Divide(m2Ptcos4phimoments);
+    cos4phiPtmomentsRatio->GetXaxis()->SetTitle("<P_{T}> (GeV/c)");
+    cos4phiPtmomentsRatio->GetYaxis()->SetTitle("Moment Ratio, Au+Au/U+U");
+    cos4phiPtmomentsRatio->GetYaxis()->SetRangeUser(-4,4);
+    cos4phiPtmomentsRatio->SetTitle("cos(4#phi) Moments Ratio");
+    cos4phiPtmomentsRatio->Draw();
+    gPad->Print("plots/plot_cos4phiPtmomentsRatioWide.png");
+
+    
+
+    makeCanvas2();
+    m2Ptcos3phimoments->SetTitle("scaled cos(3#phi) moments vs. P_{T}; P_{T} (GeV); 2<cos(3#phi)>");
+    m2Ptcos3phimoments->GetXaxis()->SetTitle("<P_{T}> (GeV/c)");
+    m2Ptcos3phimoments->GetYaxis()->SetTitle("cos(3#phi) moments scaled");
+    m2Ptcos3phimoments->SetLineColor(kBlack);
+    m2Ptcos3phimoments->Draw();
+    auto *phiFit3 = new TF1("3phifit", "pol0");
+    m2Ptcos3phimoments->Fit("3phifit", "", "", 0., 0.1);
+    gStyle->SetOptFit(1111);
+    phiFit3->Draw("same");
+    gPad->Print( "plots/plot_m2Ptcos3phimomentsWide.png");
+
+
+    makeCanvas2();
+    m2Ptcosphimoments->SetTitle("scaled cos(#phi) moments vs. P_{T}; P_{T} (GeV); 2<cos(#phi)>");
+    m2Ptcosphimoments->GetXaxis()->SetTitle("<P_{T}> (GeV/c)");
+    m2Ptcosphimoments->GetYaxis()->SetTitle("cos(#phi) moments scaled");
+    m2Ptcosphimoments->SetLineColor(kBlack);
+    m2Ptcosphimoments->Draw();
+    auto *phiFit = new TF1("phifit", "pol0");
+    m2Ptcosphimoments->Fit("phifit", "", "", 0., 0.1);
+    gStyle->SetOptFit(1111);
+    phiFit->Draw("same");
+    gPad->Print( "plots/plot_m2PtcosphimomentsWide.png");
+
+
+
+    auto *m2Ptcos4phimomentsHigherZDC = cos4phivPtHigherZDC->ProfileY("m2Ptcos4phimomentsHigherZDC", 1, -1);
+    auto *m2Ptcos4phimomentsLowerZDC = cos4phivPtLowerZDC->ProfileY("m2Ptcos4phimomentsLowerZDC", 1, -1);
+    makeCanvas2();
+    m2Ptcos4phimomentsHigherZDC->SetLineColor(kBlack);
+    m2Ptcos4phimomentsHigherZDC->Draw();
+    m2Ptcos4phimomentsHigherZDC->GetXaxis()->SetTitle("<P_{T}> (GeV/c)");
+    m2Ptcos4phimomentsHigherZDC->GetYaxis()->SetTitle("2<cos(4#phi)>");
+    m2Ptcos4phimomentsLowerZDC->SetLineColor(kRed);
+    m2Ptcos4phimomentsLowerZDC->Draw("same");
+    auto * legendcos4phiZDC = new TLegend(0.79,0.3,.99,0.55);
+    legendcos4phiZDC->AddEntry(m2Ptcos4phimomentsHigherZDC, "cos(4#phi) moments \n U+U ZDC's > 200", "l");
+    legendcos4phiZDC->AddEntry(m2Ptcos4phimomentsLowerZDC,"cos(4#phi) moments \n U+U ZDC's <= 200", "l");
+    legendcos4phiZDC->SetTextSize(0.014);
+    legendcos4phiZDC->Draw("same");
+    gPad->Print("plots/plot_m2Ptcos4phimomentsZDCcutWide.png");
+
+    
+    auto *m2Ptcos4phimomentsHigherZDCAu = cos4phivPtHigherZDCAu->ProfileY("m2Ptcos4phimomentsHigherZDCAu", 1, -1);
+    auto *m2Ptcos4phimomentsLowerZDCAu = cos4phivPtLowerZDCAu->ProfileY("m2Ptcos4phimomentsLowerZDCAu", 1, -1);
+    makeCanvas2();
+    m2Ptcos4phimomentsHigherZDCAu->SetLineColor(kBlack);
+    m2Ptcos4phimomentsHigherZDCAu->Draw();
+    m2Ptcos4phimomentsHigherZDCAu->GetXaxis()->SetTitle("<P_{T}> (GeV/c) Au");
+    m2Ptcos4phimomentsHigherZDCAu->GetYaxis()->SetTitle("2<cos(4#phi)>");
+    m2Ptcos4phimomentsLowerZDCAu->SetLineColor(kRed);
+    m2Ptcos4phimomentsLowerZDCAu->Draw("same");
+    auto * legendcos4phiZDCAu = new TLegend(0.79,0.3,.99,0.55);
+    legendcos4phiZDCAu->AddEntry(m2Ptcos4phimomentsHigherZDCAu, "cos(4#phi) moments \n Au+Au ZDC's > 200", "l");
+    legendcos4phiZDCAu->AddEntry(m2Ptcos4phimomentsLowerZDCAu,"cos(4#phi) moments \n Au+Au ZDC's <= 200", "l");
+    legendcos4phiZDCAu->SetTextSize(0.014);
+    legendcos4phiZDCAu->Draw("same");
+    gPad->Print("plots/plot_m2Ptcos4phimomentsZDCcutAuWide.png");
+
+
+
+
+
 
 
 
