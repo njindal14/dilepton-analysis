@@ -1,0 +1,30 @@
+#include <iostream>
+#include <cmath>
+
+
+double calculateZScore(double x, double mean, double stdDev)
+{
+    double zScore = (x - mean) / stdDev;
+    return zScore;
+}
+
+double calculateProbability(double zScore)
+{
+    double probability = 0.5 * (1 + std::erf(zScore / std::sqrt(2.0)));
+    return probability;
+}
+
+int probabilityTes()
+{
+    double dataPoint = 60;
+    double mean = 109;
+    double stdDev = 28;
+    
+    double zScore = calculateZScore(dataPoint, mean, stdDev);
+    double probability = calculateProbability(zScore);
+    
+    std::cout << "The z-score is: " << zScore << std::endl;
+    std::cout << "The probability of the data point is: " << probability << std::endl;
+    
+    return 0;
+}

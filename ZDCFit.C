@@ -8,6 +8,9 @@
 #include "TCanvas.h"
 #include "FemtoPairFormat.h"
 #include <cmath>
+#include "TH2F.h"
+#include "TF1.h"
+
 
 //#ifndef FEMTO_PAIR_H
 //#define FEMTO_PAIR_H
@@ -137,7 +140,7 @@ void ZDCFit() {
    ZDCfunc->SetParLimits(9,0,0.2);
    //smooth it out
    ZDCfunc->SetNpx(1000);
-   ZDCfunc->SetLineWidth(4);
+   ZDCfunc->SetLineWidth(2);
 
    ptfunc->SetNpx(1000);
    ptfunc->SetLineWidth(4);
@@ -146,7 +149,7 @@ void ZDCFit() {
    ptfunc2->SetLineWidth(4);
 
 
-    TFile *myFile = TFile::Open("/Users/Nick/Desktop/Spring2023/pair_dst_Run12UU.root");
+    TFile *myFile = TFile::Open("/Users/Nick/STAR/breit-wheeler/rootFiles/pair_dst_Run12UU.root");
     TTreeReader myReader("PairDst", myFile);
     TTreeReaderValue<FemtoPair> pair(myReader, "Pairs");
     TLorentzVector lv1, lv2, lv, lvn;
@@ -694,6 +697,19 @@ ZDCmagvPt2Profile->GetYaxis()->SetTitle("<P_{T}^{2}> (GeV/c)^{2}");
 ZDCmagvPt2Profile->SetLineColor(kBlack);
 ZDCmagvPt2Profile->Draw();
 gPad->Print( "plots/ZDCmagvPt2profile.png");
+
+/*makeCanvas3();
+TH1F *ZDCRatio = (TH1F*)mZDCEast->Clone("ZDCRatio");
+ZDCRatio->SetLineColor(kBlack);
+ZDCRatio->Divide(mZDCWest);
+ZDCRatio->GetXaxis()->SetTitle("ADC ZDC");
+ZDCRatio->GetYaxis()->SetTitle("ZDC Ratio, U+U E/W");
+ZDCRatio->GetYaxis()->SetRangeUser(-4,4);
+ZDCRatio->SetTitle("ZDC Ratio");
+ZDCRatio->Draw("PE");
+ZDCRatio->Fit("pol0", "", "", 0, 1200);
+gPad->Print("plots/plot_ZDCRatio.png");
+*/
 
 
 

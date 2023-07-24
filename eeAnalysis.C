@@ -25,9 +25,9 @@ void eeAnalysis() {
 
    //TFile * fo = new TFile( "dataPlots.root", "RECREATE" );
 
-   auto * mVertexZ = new TH1F("hist_vz", "VertexZ", 500, -100, 100);
-   auto * mDeltaVertexZ = new TH1F("mDeltaVertexZ", "DeltaVertex", 500, 900, 1100);
-   auto * mGRefMult = new TH1F("mGRefMult", "GRefMult", 500, -3, 3);
+   auto * mVertexZ = new TH1F("hist_vz", "VertexZ", 500, -200, 200);
+   auto * mDeltaVertexZ = new TH1F("mDeltaVertexZ", "DeltaVertex", 500, -1000, 1000);
+   auto * mGRefMult = new TH1F("mGRefMult", "GRefMult", 700, 0, 700);
    auto * mdTof = new TH1F("#Delta Tof hist", "#Delta Tof", 500, -15, 15);
    auto * mdTofexp = new TH1F("#Delta TofExp hist", "#Delta TofExp", 500, -15, 15);
    auto * mddTof = new TH1F("#Delta #Delta Tof hist", "#Delta #Delta Tof", 500, -10, 10);
@@ -92,6 +92,7 @@ void eeAnalysis() {
         Float_t p1_2 = pow(p1,2);
         Float_t p2_2 = pow(p2,2);
         Float_t mVertexZVal = pair->mVertexZ;
+        Float_t mDeltaVertexZVal = pair->mDeltaVertexZ;
         UShort_t mGRefMultVal = pair->mGRefMult;  
         Float_t Tof1 = pair->d1_mTof;     
         Float_t Tof2 = pair->d2_mTof;  
@@ -125,11 +126,13 @@ void eeAnalysis() {
         mdTofexp->Fill( dTofexpVal );
         mddTof->Fill( ddTofVal );
         mVertexZ->Fill( mVertexZVal);
+        mDeltaVertexZ->Fill( mDeltaVertexZVal);
         mMass->Fill( lv.M() );
 
         int chargesumval = pair->mChargeSum;
 
 
+        /*
         //make plots using like sign and unlike sign pairs for mass, for plot 1. and 2.2
         if(chargesumval == 0){
             massdiffcharges->Fill(lv.M());
@@ -179,6 +182,7 @@ void eeAnalysis() {
                 mPt->Fill( lv.Pt() );           
             }
         }
+        */
 
     
 
@@ -190,27 +194,39 @@ void eeAnalysis() {
     }
     //fo -> cd();
     
-    //makeCanvas();
-    //mGRefMult->SetLineColor(kBlack);
-    //mGRefMult->Draw();
-    //gPad->Print( "plot_mGRefMult.pdf" );
+    makeCanvas();
+    mGRefMult->SetLineColor(kBlack);
+    gPad->SetLogy();
+    mGRefMult->Draw();
+    gPad->Print( "plot_mGRefMult.pdf" );
 
+    /*
     makeCanvas();
     mPt->SetLineColor(kBlack);
     mPt->GetXaxis()->SetTitle("Pair Transverse Momentum (GeV/c)");
     mPt->GetYaxis()->SetTitle("Counts");
     mPt->Draw();
     gPad->Print( "plot_mPt.png" );
+    */
 
-    /*
+    
     makeCanvas();
     mVertexZ->SetLineColor(kBlack);
+    gPad->SetLogy();
     mVertexZ->GetXaxis()->SetTitle("zVertex (cm)");
     mVertexZ->GetYaxis()->SetTitle("Counts");
     mVertexZ->Draw();
     gPad->Print( "plot_mVertexZ.png" );
-    */
 
+    makeCanvas();
+    mDeltaVertexZ->SetLineColor(kBlack);
+    gPad->SetLogy();
+    mDeltaVertexZ->GetXaxis()->SetTitle("#Delta VertexZ (cm)");
+    mDeltaVertexZ->GetYaxis()->SetTitle("Counts");
+    mDeltaVertexZ->Draw();
+    gPad->Print( "plot_mDeltaVertexZ.png" );
+    
+/*
     makeCanvas();
     //auto * legend = new TLegend(0.2, 0.2, .8, .8);
     mMass->SetLineColor(kBlack);
@@ -233,7 +249,7 @@ void eeAnalysis() {
     leg->Draw("same");
     gPad->Print( "plot_mMass.png" );
 
-    /*
+    
     makeCanvas();
     mdTof->SetLineColor(kBlack);
     gPad->SetLogy();
@@ -258,7 +274,7 @@ void eeAnalysis() {
     mddTof->GetYaxis()->SetTitle("Counts");
     mddTof->Draw();
     gPad->Print( "plot_ddTof.png");
-    */
+    
 
     //plot 1 as indicated above
     makeCanvas();
@@ -373,7 +389,7 @@ void eeAnalysis() {
     //mdTofexp->SetLineColor(kRed);
     //gPad->SetLogy();
     //mdTofexp->Draw();
-
+*/
 
 
 
